@@ -6,7 +6,6 @@ import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import MainPanel from "./components/MainPanel";
 import Profile from "./components/Profile";
-import OAuthSuccess from "./components/OAuthSuccess";
 import { useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -29,7 +28,7 @@ export default function App() {
   const isDashboard = location.pathname === "/dashboard";
 
   // ─── AUTH ────────────────────────────────────────────────────────────────────
-  const [user, setUser] = useState(() => localStorage.getItem("token") || null);
+const [user, setUser] = useState(null);
   const [isLogin, setIsLogin] = useState(true);
   const [authData, setAuthData] = useState({ username: "", email: "", password: "" });
 
@@ -58,6 +57,38 @@ export default function App() {
   const [newAchievement, setNewAchievement] = useState(null);
   const [course, setCourse] = useState(null);
 
+  useEffect(() => {
+  const checkAuth = async () => {
+    try {
+      const res = await fetch(
+        "http://localhost:5000/me",
+        {
+          credentials: "include",
+        }
+      );
+
+      if (res.status === 401) {
+  setUser(null);
+  return;
+}
+
+      const data = await res.json();
+
+      setUser(data);
+
+      localStorage.setItem(
+        "username",
+        data.username
+      );
+
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  checkAuth();
+}, []);
+
   const topics = course || [];
 const topic = topics?.[currentTopicIndex] || null;
 const problem = topic?.problems?.[currentProblemIndex] || null;
@@ -72,7 +103,7 @@ const key = `${currentTopicIndex}-${currentProblemIndex}`;
     const loadProgress = async () => {
       try {
         const progressRes = await fetch("http://localhost:5000/load-progress", {
-          headers: { Authorization: `Bearer ${user}` },
+         credentials: "include",
         });
         const progressData = await progressRes.json();
         setProgress(progressData.progress || {});
@@ -82,7 +113,7 @@ const key = `${currentTopicIndex}-${currentProblemIndex}`;
         setAchievements(progressData.achievements || []);
 
         const codeRes = await fetch("http://localhost:5000/load-code", {
-          headers: { Authorization: `Bearer ${user}` },
+          credentials: "include",
         });
         const codeData = await codeRes.json();
         setCodeMap(codeData.codeMap || {});
@@ -138,18 +169,25 @@ const key = `${currentTopicIndex}-${currentProblemIndex}`;
     const endpoint = isLogin ? "login" : "signup";
     try {
       const response = await fetch(`http://localhost:5000/${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(authData),
-      });
+  method: "POST",
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(authData),
+});
       const data = await response.json();
 
-      if (isLogin && data.token) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("username", authData.username || data.username);
-        setUser(data.token);
-        navigate("/dashboard");
-      } else if (!isLogin && data.message) {
+      if (isLogin && data.username) {
+  localStorage.setItem(
+    "username",
+    data.username
+  );
+
+  setUser(data);
+
+  navigate("/dashboard");
+} else if (!isLogin && data.message) {
         alert("Signup successful! Now login.");
         setIsLogin(true);
       } else {
@@ -160,17 +198,27 @@ const key = `${currentTopicIndex}-${currentProblemIndex}`;
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("username");
-    setUser(null);
-    setCurrentTopicIndex(0);
-    setCurrentProblemIndex(0);
-    setCurrentView("topic");
-  };
+  const logout = async () => {
+
+  await fetch(
+    "http://localhost:5000/logout",
+    {
+      method: "POST",
+      credentials: "include"
+    }
+  );
+
+  localStorage.removeItem("username");
+
+  setUser(null);
+
+  setCurrentTopicIndex(0);
+  setCurrentProblemIndex(0);
+  setCurrentView("topic");
+};
 
   // ─── NOT LOGGED IN ───────────────────────────────────────────────────────────
- if (!user && location.pathname !== "/oauth-success") {
+ if (!user) {
   return (
     <AuthScreen
       isLogin={isLogin}
@@ -306,8 +354,8 @@ int main() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${user}`,
         },
+        credentials: "include",
         body: JSON.stringify({ achievements: updated }),
       });
 
@@ -330,8 +378,8 @@ int main() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${user}`,
         },
+        credentials: "include",
         body: JSON.stringify({
           code,
           testCases: problem.testCases,
@@ -362,8 +410,8 @@ int main() {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${user}`,
               },
+              credentials: "include",
               body: JSON.stringify({ problemKey: key, xpEarned: problem.xp }),
             });
 
@@ -404,8 +452,8 @@ int main() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${user}`,
         },
+        credentials: "include",
         body: JSON.stringify({ code, problem, failedTest, mode }),
       });
       const data = await response.json();
@@ -491,13 +539,16 @@ int main() {
 
                       saveTimeout.current = setTimeout(() => {
                         fetch("http://localhost:5000/save-code", {
-                          method: "POST",
-                          headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${user}`,
-                          },
-                          body: JSON.stringify({ problemKey: key, code: value }),
-                        });
+                                method: "POST",
+                                credentials: "include",
+                                headers: {
+                                   "Content-Type": "application/json",
+                                },
+                               body: JSON.stringify({
+                               problemKey: key,
+                               code: value,
+                               }),
+                           });
                       }, 2000);
                     }}
                     runCode={runCode}
@@ -540,11 +591,6 @@ int main() {
                 </motion.div>
               }
             />
-            <Route
-  path="/oauth-success"
-  element={<OAuthSuccess />}
-/>
-
           </Routes>
         </AnimatePresence>
       </div>

@@ -179,7 +179,7 @@ export default function AuthScreen({ isLogin, setIsLogin, authData, setAuthData,
               >
                 {isLogin ? "▶ INITIATE ACCESS" : "▶ ENLIST NOW"}
               </motion.button>
-            </motion.div>
+            
 
             {/* OAuth Divider */}
 <div className="mt-5 flex items-center gap-2">
@@ -219,6 +219,7 @@ export default function AuthScreen({ isLogin, setIsLogin, authData, setAuthData,
   >
     ◉ Google Access
   </motion.button>
+  
 
   <motion.button
     whileHover={{ scale: 1.02 }}
@@ -246,8 +247,8 @@ export default function AuthScreen({ isLogin, setIsLogin, authData, setAuthData,
   >
     ◉ GitHub Access
   </motion.button>
-
 </div>
+</motion.div>
           </AnimatePresence>
 
           {/* Status line */}

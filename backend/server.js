@@ -1,10 +1,12 @@
 // ================= IMPORTS =================
 require("dotenv").config();
+const cookieParser = require("cookie-parser");
 const Groq = require("groq-sdk");
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY
 });
+
 const authMiddleware = require("./middleware/auth");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -19,6 +21,7 @@ const fs = require("fs");
 const path = require("path");
 const passport = require("./config/passport");
 const session = require("express-session");
+const auth = require("./middleware/auth");
 
 function normalizeOutput(str) {
   if (!str) return "";
@@ -58,7 +61,7 @@ app.use(
     saveUninitialized: false
   })
 );
-
+app.use(cookieParser());
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -105,20 +108,46 @@ app.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
 
     const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
+  { id: user._id },
+  process.env.JWT_SECRET,
+  { expiresIn: "1d" }
+);
 
-    // ✅ ADD USERNAME HERE
-    res.json({
-      token,
-      username: user.username
-    });
+res.cookie("token", token, {
+  httpOnly: true,
+  secure: false, // true after deployment with HTTPS
+  sameSite: "lax",
+  maxAge: 24 * 60 * 60 * 1000
+});
+
+res.json({
+  username: user.username
+});
 
   } catch {
     res.status(500).json({ message: "Login failed" });
   }
+});
+
+app.post("/logout", (req, res) => {
+
+  res.clearCookie("token");
+
+  res.json({
+    message: "Logged out"
+  });
+
+});
+
+app.get("/me", auth, async (req, res) => {
+
+  const user = await User.findById(req.user);
+
+  res.json({
+    username: user.username,
+    email: user.email
+  });
+
 });
 
 // ================= GOOGLE AUTH =================
@@ -141,10 +170,16 @@ app.get(
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
+res.cookie("token", token, {
+  httpOnly: true,
+  secure: false,
+  sameSite: "lax",
+  maxAge: 24 * 60 * 60 * 1000
+});
 
-    res.redirect(
-      `http://localhost:5173/oauth-success?token=${token}&username=${req.user.username}`
-    );
+res.redirect(
+ "http://localhost:5173/dashboard"
+);
 
   }
 );
@@ -169,10 +204,16 @@ app.get(
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
+res.cookie("token", token, {
+  httpOnly: true,
+  secure: false,
+  sameSite: "lax",
+  maxAge: 24 * 60 * 60 * 1000
+});
 
-    res.redirect(
-      `http://localhost:5173/oauth-success?token=${token}&username=${req.user.username}`
-    );
+res.redirect(
+ "http://localhost:5173/dashboard"
+);
 
   }
 );

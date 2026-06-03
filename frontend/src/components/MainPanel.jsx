@@ -47,9 +47,12 @@ export default function MainPanel({
 
   const loadSubmissions = async () => {
     const problemKey = `${currentTopicIndex}-${currentProblemIndex}`;
-    const res = await fetch(`http://localhost:5000/submissions/${problemKey}`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    });
+    const res = await fetch(
+  `http://localhost:5000/submissions/${problemKey}`,
+  {
+    credentials: "include",
+  }
+);
     const data = await res.json();
     setSubmissions(data);
   };
