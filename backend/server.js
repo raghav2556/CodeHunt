@@ -17,6 +17,9 @@ const mongoose = require("mongoose");
 const { exec } = require("child_process");
 const fs = require("fs");
 const path = require("path");
+const passport = require("./config/passport");
+const session = require("express-session");
+
 function normalizeOutput(str) {
   if (!str) return "";
 
@@ -48,6 +51,16 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+app.use(
+  session({
+    secret: process.env.JWT_SECRET,
+    resave: false,
+    saveUninitialized: false
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 // ================= MONGODB =================
 mongoose.connect(process.env.MONGO_URI)
@@ -107,6 +120,62 @@ app.post("/login", async (req, res) => {
     res.status(500).json({ message: "Login failed" });
   }
 });
+
+// ================= GOOGLE AUTH =================
+app.get(
+  "/auth/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"]
+  })
+);
+
+app.get(
+  "/auth/google/callback",
+  passport.authenticate("google", {
+    session: false
+  }),
+  (req, res) => {
+
+    const token = jwt.sign(
+      { id: req.user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.redirect(
+      `http://localhost:5173/oauth-success?token=${token}&username=${req.user.username}`
+    );
+
+  }
+);
+
+// ================= GITHUB AUTH =================
+app.get(
+  "/auth/github",
+  passport.authenticate("github", {
+    scope: ["user:email"]
+  })
+);
+
+app.get(
+  "/auth/github/callback",
+  passport.authenticate("github", {
+    session: false
+  }),
+  (req, res) => {
+
+    const token = jwt.sign(
+      { id: req.user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.redirect(
+      `http://localhost:5173/oauth-success?token=${token}&username=${req.user.username}`
+    );
+
+  }
+);
 
 
 // ================= SAVE PROGRESS (SECURE) =================

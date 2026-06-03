@@ -108,6 +108,7 @@ export default function AuthScreen({ isLogin, setIsLogin, authData, setAuthData,
               >
                 {tab}
               </motion.button>
+              
             ))}
           </div>
 
@@ -179,6 +180,74 @@ export default function AuthScreen({ isLogin, setIsLogin, authData, setAuthData,
                 {isLogin ? "▶ INITIATE ACCESS" : "▶ ENLIST NOW"}
               </motion.button>
             </motion.div>
+
+            {/* OAuth Divider */}
+<div className="mt-5 flex items-center gap-2">
+  <div className="flex-1 divider-subtle" />
+  <p className="text-[0.55rem] font-mono text-[var(--text-muted)] px-2 uppercase tracking-wider">
+    alternative access
+  </p>
+  <div className="flex-1 divider-subtle" />
+</div>
+
+{/* OAuth Buttons */}
+<div className="mt-4 space-y-3">
+
+  <motion.button
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.97 }}
+    onClick={() =>
+      window.location.href =
+      "http://localhost:5000/auth/google"
+    }
+    className="
+      w-full
+      py-3
+      rounded-xl
+      border
+      border-[rgba(0,212,255,0.25)]
+      bg-[rgba(0,212,255,0.05)]
+      text-[var(--cyan)]
+      font-hud
+      text-[0.65rem]
+      tracking-[0.18em]
+      uppercase
+      hover:bg-[rgba(0,212,255,0.08)]
+      hover:border-[rgba(0,212,255,0.45)]
+      transition-all
+    "
+  >
+    ◉ Google Access
+  </motion.button>
+
+  <motion.button
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.97 }}
+    onClick={() =>
+      window.location.href =
+      "http://localhost:5000/auth/github"
+    }
+    className="
+      w-full
+      py-3
+      rounded-xl
+      border
+      border-[rgba(168,85,247,0.25)]
+      bg-[rgba(168,85,247,0.05)]
+      text-purple-300
+      font-hud
+      text-[0.65rem]
+      tracking-[0.18em]
+      uppercase
+      hover:bg-[rgba(168,85,247,0.08)]
+      hover:border-[rgba(168,85,247,0.45)]
+      transition-all
+    "
+  >
+    ◉ GitHub Access
+  </motion.button>
+
+</div>
           </AnimatePresence>
 
           {/* Status line */}

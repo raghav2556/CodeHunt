@@ -16,8 +16,12 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true
+      required: function () {
+    return !this.googleId && !this.githubId;}
     },
+    googleId: String,
+    githubId: String,
+    provider: String,
 
     xp: {
       type: Number,

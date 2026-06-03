@@ -6,6 +6,7 @@ import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import MainPanel from "./components/MainPanel";
 import Profile from "./components/Profile";
+import OAuthSuccess from "./components/OAuthSuccess";
 import { useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -56,6 +57,13 @@ export default function App() {
   const [achievements, setAchievements] = useState([]);
   const [newAchievement, setNewAchievement] = useState(null);
   const [course, setCourse] = useState(null);
+
+  const topics = course || [];
+const topic = topics?.[currentTopicIndex] || null;
+const problem = topic?.problems?.[currentProblemIndex] || null;
+const currentStage = currentTopicIndex;
+const currentStageName = topic?.topicName || "";
+const key = `${currentTopicIndex}-${currentProblemIndex}`;
 
   // ─── LOAD PROGRESS ───────────────────────────────────────────────────────────
   useEffect(() => {
@@ -162,17 +170,17 @@ export default function App() {
   };
 
   // ─── NOT LOGGED IN ───────────────────────────────────────────────────────────
-  if (!user) {
-    return (
-      <AuthScreen
-        isLogin={isLogin}
-        setIsLogin={setIsLogin}
-        authData={authData}
-        setAuthData={setAuthData}
-        handleAuth={handleAuth}
-      />
-    );
-  }
+ if (!user && location.pathname !== "/oauth-success") {
+  return (
+    <AuthScreen
+      isLogin={isLogin}
+      setIsLogin={setIsLogin}
+      authData={authData}
+      setAuthData={setAuthData}
+      handleAuth={handleAuth}
+    />
+  );
+}
 
   // ─── LOADING SCREEN (course not yet fetched) ─────────────────────────────────
   if (user && !course) {
@@ -255,13 +263,6 @@ export default function App() {
     );
   }
 
-  // ─── DERIVED STATE ────────────────────────────────────────────────────────────
-  const topics = course || [];
-  const topic = topics?.[currentTopicIndex] || null;
-  const problem = topic?.problems?.[currentProblemIndex] || null;
-  const currentStage = currentTopicIndex;
-  const currentStageName = topic?.topicName || "";
-  const key = `${currentTopicIndex}-${currentProblemIndex}`;
 
   const defaultTemplate = `#include <bits/stdc++.h>
 using namespace std;
@@ -277,7 +278,7 @@ int main() {
   const code = codeMap[key] || defaultTemplate;
 
   // ─── ACHIEVEMENT CHECK ───────────────────────────────────────────────────────
-  const checkAchievements = async (updatedProgress = progress) => {
+  async function checkAchievements(updatedProgress = progress) {
     const unlocked = [];
 
     if (Object.keys(updatedProgress).length >= 1 && !achievements.includes("first")) {
@@ -314,7 +315,7 @@ int main() {
       setNewAchievement(unlocked[0]);
       setTimeout(() => setNewAchievement(null), 3000);
     }
-  };
+  }
 
   // ─── RUN CODE ────────────────────────────────────────────────────────────────
   const runCode = async () => {
@@ -539,6 +540,10 @@ int main() {
                 </motion.div>
               }
             />
+            <Route
+  path="/oauth-success"
+  element={<OAuthSuccess />}
+/>
 
           </Routes>
         </AnimatePresence>
