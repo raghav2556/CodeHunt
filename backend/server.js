@@ -1,0 +1,488 @@
+// ================= IMPORTS =================
+require("dotenv").config();
+const Groq = require("groq-sdk");
+
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY
+});
+const authMiddleware = require("./middleware/auth");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const User = require("./models/User");
+const Course = require("./models/Course");
+const Submission = require("./models/Submission");
+const express = require("express");
+const cors = require("cors");
+const mongoose = require("mongoose");
+const { exec } = require("child_process");
+const fs = require("fs");
+const path = require("path");
+function normalizeOutput(str) {
+  if (!str) return "";
+
+  return str
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .split("\n")
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+    .join("\n")
+    .trim();
+}
+
+// 🔥 Safe Cleanup
+function safeCleanup(file, exe) {
+  try {
+    if (fs.existsSync(file)) fs.unlinkSync(file);
+    if (fs.existsSync(exe)) fs.unlinkSync(exe);
+  } catch (err) {
+    console.log("Cleanup error:", err);
+  }
+}
+
+
+// ================= APP SETUP =================
+const app = express();
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
+app.use(express.json());
+
+// ================= MONGODB =================
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB Connected ✅"))
+  .catch(err => console.log("MongoDB Error ❌", err));
+
+
+// ================= AUTH =================
+app.post("/signup", async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+
+    const existing = await User.findOne({ email });
+    if (existing)
+      return res.status(400).json({ message: "User already exists" });
+
+    const hashed = await bcrypt.hash(password, 10);
+
+    await new User({
+      username,
+      email,
+      password: hashed
+    }).save();
+
+    res.json({ message: "Signup successful" });
+
+  } catch {
+    res.status(500).json({ message: "Signup failed" });
+  }
+});
+
+app.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user)
+      return res.status(400).json({ message: "User not found" });
+
+    const match = await bcrypt.compare(password, user.password);
+    if (!match)
+      return res.status(400).json({ message: "Invalid credentials" });
+
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    // ✅ ADD USERNAME HERE
+    res.json({
+      token,
+      username: user.username
+    });
+
+  } catch {
+    res.status(500).json({ message: "Login failed" });
+  }
+});
+
+
+// ================= SAVE PROGRESS (SECURE) =================
+app.post("/save-progress", authMiddleware, async (req, res) => {
+  try {
+    const { problemKey, xpEarned } = req.body;
+
+    const user = await User.findById(req.user);
+    
+
+    if (!problemKey)
+      return res.status(400).json({ message: "Invalid problem key" });
+
+    if (!user.progress.get(problemKey)) {
+      user.progress.set(problemKey, true);
+      user.xp += xpEarned || 0;
+
+      // Streak logic
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (!user.lastActiveDate) {
+        user.streak = 1;
+      } else {
+        const last = new Date(user.lastActiveDate);
+        last.setHours(0, 0, 0, 0);
+        const diff = (today - last) / (1000 * 60 * 60 * 24);
+
+        if (diff === 1) user.streak += 1;
+        else if (diff > 1) user.streak = 1;
+      }
+
+      user.lastActiveDate = today;
+    }
+
+    user.level = Math.floor(user.xp / 100) + 1;
+
+    await user.save();
+    
+
+    res.json({
+  progress: Object.fromEntries(user.progress),
+  xp: user.xp,
+  level: user.level,
+  streak: user.streak,
+  achievements: user.achievements
+});
+
+  } catch {
+    res.status(500).json({ message: "Save failed" });
+  }
+});
+
+// ================= SAVE ACHIEVEMENTS =================
+app.post("/save-achievements", authMiddleware, async (req, res) => {
+
+  try {
+
+    const { achievements } = req.body;
+
+    const user = await User.findById(req.user);
+
+    user.achievements = achievements;
+
+    await user.save();
+
+    res.json({ success: true });
+
+  } catch (err) {
+
+    res.status(500).json({
+      message: "Failed to save achievements"
+    });
+
+  }
+
+});
+
+
+// ================= LOAD PROGRESS =================
+app.get("/load-progress", authMiddleware, async (req, res) => {
+  const user = await User.findById(req.user);
+
+  res.json({
+  progress: Object.fromEntries(user.progress),
+  xp: user.xp,
+  level: user.level,
+  streak: user.streak,
+  achievements: user.achievements || []
+});
+});
+
+
+
+// ================= RUN CODE (IMPROVED JUDGE) =================
+app.post("/run", authMiddleware, async (req, res) => {
+
+  const { code, testCases, problemKey } = req.body;
+
+  const id = Date.now();
+  const fileName = `temp_${id}.cpp`;
+  const exeName = `temp_${id}.exe`;
+
+  try {
+
+    fs.writeFileSync(fileName, code);
+
+    // ===== COMPILE =====
+    const compile = await new Promise((resolve) => {
+
+      exec(`g++ ${fileName} -o ${exeName}`, { timeout: 5000 }, (err, _, stderr) => {
+
+        if (err) {
+          resolve({ success: false, error: stderr });
+        } else {
+          resolve({ success: true });
+        }
+
+      });
+
+    });
+
+    if (!compile.success) {
+
+      try {
+        await Submission.create({
+          userId: req.user,
+          problemKey,
+          code,
+          status: "Compile Error"
+        });
+      } catch (err) {
+        console.log("Submission save error:", err);
+      }
+
+      safeCleanup(fileName, exeName);
+
+      return res.json({ error: compile.error });
+    }
+
+
+    const results = [];
+
+    // ===== RUN TESTS =====
+    for (let i = 0; i < testCases.length; i++) {
+
+      const test = testCases[i];
+
+      try {
+
+        const output = await new Promise((resolve, reject) => {
+
+          const child = exec(path.resolve(exeName), { timeout: 3000 }, (runErr, stdout) => {
+
+            if (runErr) return reject();
+
+            resolve(stdout || "");
+
+          });
+
+          child.stdin.write(test.input || "");
+          child.stdin.end();
+
+        });
+
+        const normalizedUser = normalizeOutput(output);
+        const normalizedExpected = normalizeOutput(test.expected);
+
+        results.push({
+          input: test.input,
+          expected: test.expected,
+          output: normalizedUser,
+          passed: normalizedUser === normalizedExpected
+        });
+
+      } catch {
+
+        results.push({
+          input: test.input,
+          expected: test.expected,
+          output: "Runtime Error",
+          passed: false
+        });
+
+      }
+
+    }
+
+
+    // ===== DETERMINE STATUS =====
+    let status = "Wrong Answer";
+
+    const allPassed = results.every(r => r.passed);
+
+    if (allPassed) status = "Accepted";
+
+    if (results.some(r => r.output === "Runtime Error")) {
+      status = "Runtime Error";
+    }
+
+
+    // ===== SAVE SUBMISSION =====
+    try {
+
+      await Submission.create({
+        userId: req.user,
+        problemKey,
+        code,
+        status
+      });
+
+    } catch (err) {
+
+      console.log("Submission save error:", err);
+
+    }
+
+
+    safeCleanup(fileName, exeName);
+
+    res.json({ results });
+
+  } catch (err) {
+
+    console.log("Judge error:", err);
+
+    safeCleanup(fileName, exeName);
+
+    res.json({
+      results: [{
+        input: "",
+        expected: "",
+        output: "Server Error",
+        passed: false
+      }]
+    });
+
+  }
+
+});
+
+
+app.post("/hint", authMiddleware, async (req, res) => {
+  try {
+    const { code, problem, failedTest, mode } = req.body;
+
+    const systemPrompt = `
+You are an expert C++ mentor.
+
+Rules:
+- NEVER provide full solution
+- NEVER rewrite full corrected code
+- Keep answer under 120 words
+- Encourage logical thinking
+- Only provide guidance
+`;
+
+    let userPrompt = "";
+
+    if (mode === "start") {
+      userPrompt = `
+Student is stuck at beginning.
+
+Problem:
+Title: ${problem.title}
+Description: ${problem.description}
+
+Give a starting hint about:
+- What concept to use
+- First logical step
+
+Do NOT reveal full approach.
+`;
+    }
+
+    if (mode === "debug") {
+      userPrompt = `
+Student attempted but failed test case.
+
+Problem:
+Title: ${problem.title}
+Description: ${problem.description}
+
+Student Code:
+${code}
+
+Failed Test Case:
+Input: ${failedTest?.input}
+Expected: ${failedTest?.expected}
+Output: ${failedTest?.output}
+
+Explain likely logical mistake.
+Do NOT give corrected code.
+`;
+    }
+
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.1-8b-instant",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      temperature: 0.3
+    });
+
+    res.json({
+      hint: completion.choices[0].message.content
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.json({
+      hint: "Think carefully about the problem requirements."
+    });
+  }
+});
+
+const PORT = 5000;
+app.listen(PORT, () => console.log(`Server running on ${PORT}`));
+
+app.post("/save-code", authMiddleware, async (req, res) => {
+
+  const { problemKey, code } = req.body;
+
+  const user = await User.findById(req.user);
+
+  if (!user.codeMap) {
+  user.codeMap = new Map();
+}
+
+user.codeMap.set(problemKey, code);
+
+  await user.save();
+
+  res.json({ success: true });
+
+});
+
+app.get("/load-code", authMiddleware, async (req, res) => {
+
+  const user = await User.findById(req.user);
+
+  res.json({
+    codeMap: Object.fromEntries(user.codeMap || {})
+  });
+
+});
+
+app.get("/course/:slug", async (req, res) => {
+
+  try {
+
+    const course = await Course.findOne({ slug: req.params.slug });
+
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    res.json(course);
+
+  } catch (err) {
+    res.status(500).json({ message: "Failed to load course" });
+  }
+
+});
+
+app.get("/submissions/:problemKey", authMiddleware, async (req, res) => {
+
+  const submissions = await Submission.find({
+    userId: req.user,
+    problemKey: req.params.problemKey
+  })
+  .sort({ createdAt: -1 })
+  .limit(20);
+
+  res.json(submissions);
+
+});
+

@@ -1,0 +1,345 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap');
+
+/* ─── DESIGN TOKENS ──────────────────────────────────── */
+:root {
+  --void:       #040B14;
+  --card:       #071224;
+  --elevated:   #0C1A30;
+  --neon:       #00FF87;
+  --neon-10:    rgba(0, 255, 135, 0.10);
+  --neon-20:    rgba(0, 255, 135, 0.20);
+  --neon-40:    rgba(0, 255, 135, 0.40);
+  --neon-glow:  rgba(0, 255, 135, 0.55);
+  --cyan:       #00D4FF;
+  --cyan-10:    rgba(0, 212, 255, 0.10);
+  --cyan-glow:  rgba(0, 212, 255, 0.45);
+  --amber:      #FFB800;
+  --amber-10:   rgba(255, 184, 0, 0.10);
+  --crimson:    #FF3B4E;
+  --crimson-10: rgba(255, 59, 78, 0.10);
+  --purple:     #A855F7;
+  --purple-10:  rgba(168, 85, 247, 0.10);
+  --text:       #D4EDDF;
+  --text-muted: rgba(212, 237, 223, 0.45);
+  --border:     rgba(0, 255, 135, 0.10);
+  --border-mid: rgba(0, 255, 135, 0.25);
+  --border-hi:  rgba(0, 255, 135, 0.55);
+}
+
+/* ─── BASE ───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  background: var(--void);
+  color: var(--text);
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── SCROLLBAR ──────────────────────────────────────── */
+::-webkit-scrollbar              { width: 5px; height: 5px; }
+::-webkit-scrollbar-track        { background: var(--void); }
+::-webkit-scrollbar-thumb        { background: rgba(0,255,135,0.25); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover  { background: var(--neon); }
+*                                { scrollbar-width: thin; scrollbar-color: rgba(0,255,135,0.25) var(--void); }
+
+/* ─── FONT UTILITIES ─────────────────────────────────── */
+.font-hud   { font-family: 'Orbitron', monospace; letter-spacing: 0.08em; }
+.font-title { font-family: 'Rajdhani', sans-serif; font-weight: 700; letter-spacing: 0.02em; }
+.font-mono  { font-family: 'Share Tech Mono', monospace; letter-spacing: 0.04em; }
+
+/* ─── BACKGROUNDS ────────────────────────────────────── */
+.bg-void { background-color: var(--void); }
+
+.bg-grid {
+  background-image:
+    linear-gradient(var(--neon-10) 1px, transparent 1px),
+    linear-gradient(90deg, var(--neon-10) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.bg-dot-grid {
+  background-image: radial-gradient(circle, rgba(0,255,135,0.12) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.scanlines {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.08) 3px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
+  z-index: 0;
+}
+
+/* ─── CARD STYLES ────────────────────────────────────── */
+.glass {
+  background: rgba(7, 18, 36, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border);
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.card:hover {
+  border-color: var(--border-mid);
+}
+
+.card-active {
+  border-color: var(--border-hi);
+  box-shadow: 0 0 0 1px var(--neon-20), 0 0 30px var(--neon-10), inset 0 0 20px var(--neon-10);
+}
+
+.card-hover:hover {
+  border-color: var(--border-hi) !important;
+  box-shadow: 0 0 0 1px var(--neon-20), 0 0 40px var(--neon-10);
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+/* ─── GLOW EFFECTS ───────────────────────────────────── */
+.glow-neon       { box-shadow: 0 0 20px var(--neon-glow), 0 0 60px rgba(0,255,135,0.15); }
+.glow-neon-sm    { box-shadow: 0 0 10px var(--neon-40), 0 0 20px var(--neon-20); }
+.glow-cyan       { box-shadow: 0 0 20px var(--cyan-glow); }
+.glow-amber      { box-shadow: 0 0 20px rgba(255,184,0,0.4); }
+.text-glow-neon  { text-shadow: 0 0 10px var(--neon-glow), 0 0 24px var(--neon-40); }
+.text-glow-cyan  { text-shadow: 0 0 10px var(--cyan-glow); }
+.text-glow-amber { text-shadow: 0 0 10px rgba(255,184,0,0.7); }
+
+/* ─── BUTTONS ────────────────────────────────────────── */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #00cc6a, #00FF87);
+  color: #020b0a;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  transition: box-shadow 0.2s, transform 0.1s;
+  border: none;
+}
+.btn-primary:hover {
+  box-shadow: 0 0 30px var(--neon-glow), 0 0 60px rgba(0,255,135,0.2);
+  transform: translateY(-1px);
+}
+.btn-primary:active { transform: translateY(0) scale(0.98); }
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.5s;
+}
+.btn-primary:hover::before { transform: translateX(100%); }
+
+.btn-ghost {
+  background: rgba(0,255,135,0.05);
+  border: 1px solid var(--border-mid);
+  color: var(--text);
+  transition: all 0.2s;
+}
+.btn-ghost:hover {
+  background: var(--neon-10);
+  border-color: var(--border-hi);
+  color: var(--neon);
+}
+
+.btn-danger {
+  background: var(--crimson-10);
+  border: 1px solid rgba(255,59,78,0.3);
+  color: var(--crimson);
+  transition: all 0.2s;
+}
+.btn-danger:hover {
+  background: rgba(255,59,78,0.2);
+  border-color: rgba(255,59,78,0.6);
+}
+
+/* ─── PROGRESS BARS ──────────────────────────────────── */
+.prog-track {
+  background: rgba(0,255,135,0.07);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.prog-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00cc6a, #00FF87);
+  border-radius: 999px;
+  box-shadow: 0 0 10px var(--neon-40), 0 0 20px var(--neon-20);
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.prog-fill-amber {
+  background: linear-gradient(90deg, #cc9200, var(--amber));
+  box-shadow: 0 0 10px rgba(255,184,0,0.5);
+}
+
+/* ─── BADGES ─────────────────────────────────────────── */
+.badge {
+  font-family: 'Orbitron', monospace;
+  font-weight: 600;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+.badge-neon   { background: var(--neon-10); border: 1px solid var(--border-mid); color: var(--neon); }
+.badge-cyan   { background: var(--cyan-10); border: 1px solid rgba(0,212,255,0.3); color: var(--cyan); }
+.badge-amber  { background: var(--amber-10); border: 1px solid rgba(255,184,0,0.3); color: var(--amber); }
+.badge-crimson{ background: var(--crimson-10); border: 1px solid rgba(255,59,78,0.3); color: var(--crimson); }
+.badge-purple { background: var(--purple-10); border: 1px solid rgba(168,85,247,0.3); color: var(--purple); }
+
+/* ─── DIVIDERS ───────────────────────────────────────── */
+.divider-neon {
+  height: 1px;
+  background: linear-gradient(90deg, var(--neon-40), var(--neon-20), transparent);
+}
+
+.divider-subtle {
+  height: 1px;
+  background: var(--border);
+}
+
+/* ─── ACHIEVEMENT ────────────────────────────────────── */
+.achievement-glow {
+  animation: achievement-pulse 3s ease-in-out infinite;
+}
+
+/* ─── TEXT GRADIENT ──────────────────────────────────── */
+.text-gradient-neon {
+  background: linear-gradient(135deg, var(--neon) 0%, var(--cyan) 50%, var(--neon) 100%);
+  background-size: 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-shift 4s ease-in-out infinite;
+}
+
+.text-neon  { color: var(--neon); }
+.text-cyan  { color: var(--cyan); }
+.text-amber { color: var(--amber); }
+.text-crimson { color: var(--crimson); }
+
+/* ─── MARKDOWN ───────────────────────────────────────── */
+.notes-body p    { color: rgba(212,237,223,0.82); line-height: 1.8; margin-bottom: 1.2rem; }
+.notes-body h1   { font-family: 'Rajdhani', sans-serif; font-size: 2rem; font-weight: 700; color: var(--neon); margin: 2rem 0 1rem; }
+.notes-body h2   { font-family: 'Rajdhani', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--text); margin: 1.75rem 0 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+.notes-body h3   { font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; font-weight: 600; color: rgba(212,237,223,0.9); margin: 1.5rem 0 0.5rem; }
+.notes-body ul, .notes-body ol { padding-left: 1.5rem; margin-bottom: 1rem; color: rgba(212,237,223,0.82); }
+.notes-body li   { margin-bottom: 0.4rem; line-height: 1.7; }
+.notes-body code { font-family: 'Share Tech Mono', monospace; background: rgba(0,255,135,0.08); color: var(--neon); padding: 2px 7px; border-radius: 4px; font-size: 0.85em; border: 1px solid var(--neon-10); }
+.notes-body pre  { background: #030d1c; border: 1px solid var(--border-mid); border-radius: 10px; padding: 1.25rem 1.5rem; overflow-x: auto; margin-bottom: 1.5rem; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
+.notes-body pre code { background: none; border: none; padding: 0; color: var(--neon); font-size: 0.875rem; }
+
+/* ─── EDITOR WRAPPER ─────────────────────────────────── */
+.editor-wrap {
+  border: 1px solid var(--border-mid);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+.editor-wrap:focus-within {
+  border-color: var(--neon-40);
+  box-shadow: 0 0 20px var(--neon-10);
+}
+
+/* ─── ANIMATIONS ─────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideRight {
+  from { opacity: 0; transform: translateX(60px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+
+@keyframes achievement-pulse {
+  0%, 100% { box-shadow: 0 0 12px var(--neon-20), inset 0 0 12px var(--neon-10); }
+  50%       { box-shadow: 0 0 30px var(--neon-40), inset 0 0 20px var(--neon-20); }
+}
+
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+@keyframes ping-neon {
+  75%, 100% { transform: scale(1.6); opacity: 0; }
+}
+
+@keyframes pulse-ring {
+  0%    { transform: scale(0.85); opacity: 0.6; }
+  50%   { transform: scale(1);    opacity: 1;   }
+  100%  { transform: scale(0.85); opacity: 0.6; }
+}
+
+@keyframes xp-burst {
+  0%   { opacity: 1; transform: translateY(0) scale(1); }
+  60%  { opacity: 1; transform: translateY(-32px) scale(1.2); }
+  100% { opacity: 0; transform: translateY(-56px) scale(0.8); }
+}
+
+@keyframes level-flash {
+  0%, 100% { filter: brightness(1); }
+  30%       { filter: brightness(2) saturate(2); }
+  60%       { filter: brightness(1.5); }
+}
+
+@keyframes scan {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(200%); }
+}
+
+@keyframes flicker {
+  0%, 95%, 100% { opacity: 1; }
+  96%            { opacity: 0.6; }
+  97%            { opacity: 1; }
+  98%            { opacity: 0.7; }
+}
+
+/* ─── ANIMATION UTILITIES ────────────────────────────── */
+.animate-fadeUp       { animation: fadeUp 0.5s ease-out forwards; }
+.animate-fadeIn       { animation: fadeIn 0.8s ease-out; }
+.animate-slideRight   { animation: slideRight 0.4s cubic-bezier(0.16,1,0.3,1) forwards; }
+.animate-xp-burst     { animation: xp-burst 1.2s ease-out forwards; }
+.animate-level-flash  { animation: level-flash 0.6s ease; }
+.animate-flicker      { animation: flicker 4s ease-in-out infinite; }
+.animate-blink        { animation: blink-cursor 1s ease-in-out infinite; }
+.animate-ping-neon    { animation: ping-neon 1.2s ease-out infinite; }
+.animate-pulse-ring   { animation: pulse-ring 2s ease-in-out infinite; }
+
+/* staggered children */
+.stagger > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger > *:nth-child(2) { animation-delay: 0.10s; }
+.stagger > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger > *:nth-child(4) { animation-delay: 0.20s; }
+.stagger > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger > *:nth-child(6) { animation-delay: 0.30s; }
