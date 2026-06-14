@@ -14,8 +14,74 @@ function Node({ x, y, size, delay }) {
 }
 
 export default function AuthScreen({ isLogin, setIsLogin, authData, setAuthData, handleAuth, authMessage,
-  authMessageType
+  authMessageType, setAuthMessage, setAuthMessageType
  }) {
+
+  const validateAndSubmit = () => {
+
+  if (!isLogin) {
+
+    if (authData.username.trim().length < 3) {
+
+      setAuthMessageType("error");
+
+      setAuthMessage(
+        "Username must be at least 3 characters"
+      );
+
+      return;
+    }
+
+    if (authData.username.length > 30) {
+
+      setAuthMessageType("error");
+
+      setAuthMessage(
+        "Username cannot exceed 30 characters"
+      );
+
+      return;
+    }
+
+    const emailRegex =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(authData.email)) {
+
+      setAuthMessageType("error");
+
+      setAuthMessage(
+        "Please enter a valid email address"
+      );
+
+      return;
+    }
+
+    if (authData.password.length < 8) {
+
+      setAuthMessageType("error");
+
+      setAuthMessage(
+        "Password must be at least 8 characters"
+      );
+
+      return;
+    }
+
+    if (authData.password.length > 64) {
+
+      setAuthMessageType("error");
+
+      setAuthMessage(
+        "Password cannot exceed 64 characters"
+      );
+
+      return;
+    }
+  }
+
+  handleAuth();
+};
   const [nodes] = useState(() =>
     Array.from({ length: 18 }, (_, i) => ({
       id: i,
@@ -101,7 +167,10 @@ export default function AuthScreen({ isLogin, setIsLogin, authData, setAuthData,
             {["LOGIN", "REGISTER"].map((tab, i) => (
               <motion.button
                 key={tab}
-                onClick={() => setIsLogin(i === 0)}
+                onClick={() => {
+  setAuthMessage("");
+  setIsLogin(i === 0);
+}}
                 whileTap={{ scale: 0.97 }}
                 className={`flex-1 py-2 rounded-md text-xs font-hud transition-all duration-200 ${
                   isLogin === (i === 0)
@@ -186,7 +255,9 @@ export default function AuthScreen({ isLogin, setIsLogin, authData, setAuthData,
     password: e.target.value
   });
 }}
-                  onKeyDown={e => e.key === "Enter" && handleAuth()}
+                  onKeyDown={e =>
+  e.key === "Enter" && validateAndSubmit()
+}
                   className={inputClass("password")}
                 />
               </div>
@@ -231,7 +302,7 @@ export default function AuthScreen({ isLogin, setIsLogin, authData, setAuthData,
 
               {/* Submit */}
               <motion.button
-                onClick={handleAuth}
+                onClick={validateAndSubmit}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
                 className="btn-primary w-full py-3.5 rounded-xl text-xs mt-2"
@@ -319,7 +390,10 @@ export default function AuthScreen({ isLogin, setIsLogin, authData, setAuthData,
             <div className="flex-1 divider-subtle" />
           </div>
           <button
-            onClick={() => setIsLogin(!isLogin)}
+            onClick={() => {
+  setAuthMessage("");
+  setIsLogin(!isLogin);
+}}
             className="w-full mt-3 py-2 text-[0.65rem] font-hud text-[var(--cyan)] hover:text-[var(--neon)] 
             transition-colors tracking-widest uppercase"
           >

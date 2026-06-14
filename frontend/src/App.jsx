@@ -263,6 +263,8 @@ const key = `${currentTopicIndex}-${currentProblemIndex}`;
   handleAuth={handleAuth}
   authMessage={authMessage}
   authMessageType={authMessageType}
+  setAuthMessage={setAuthMessage}
+  setAuthMessageType={setAuthMessageType}
 />
   );
 }
