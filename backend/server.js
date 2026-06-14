@@ -76,6 +76,44 @@ app.post("/signup", async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
+const emailRegex =
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+if (!username || username.trim().length < 3) {
+  return res.status(400).json({
+    message:
+      "Username must be at least 3 characters"
+  });
+}
+
+if (username.length > 30) {
+  return res.status(400).json({
+    message:
+      "Username cannot exceed 30 characters"
+  });
+}
+
+if (!emailRegex.test(email)) {
+  return res.status(400).json({
+    message:
+      "Please enter a valid email address"
+  });
+}
+
+if (password.length < 8) {
+  return res.status(400).json({
+    message:
+      "Password must be at least 8 characters"
+  });
+}
+
+if (password.length > 64) {
+  return res.status(400).json({
+    message:
+      "Password cannot exceed 64 characters"
+  });
+}
+
     const existing = await User.findOne({ email });
     if (existing)
       return res.status(400).json({ message: "User already exists" });
@@ -327,17 +365,41 @@ app.post("/run", authMiddleware, async (req, res) => {
     // ===== COMPILE =====
     const compile = await new Promise((resolve) => {
 
-      exec(`g++ ${fileName} -o ${exeName}`, { timeout: 5000 }, (err, _, stderr) => {
+  console.log("Compiling:", fileName);
 
-        if (err) {
-          resolve({ success: false, error: stderr });
-        } else {
-          resolve({ success: true });
-        }
+  exec(
+    `g++ "${fileName}" -o "${exeName}"`,
+    { timeout: 5000 },
+    (err, stdout, stderr) => {
 
-      });
+      if (err) {
 
-    });
+        console.log("Compile Error:", err);
+        console.log("Compile STDERR:", stderr);
+        console.log("Compile STDOUT:", stdout);
+
+        resolve({
+          success: false,
+          error:
+            stderr ||
+            err.message ||
+            "Compilation failed"
+        });
+
+      } else {
+
+        console.log("Compile Success");
+
+        resolve({
+          success: true
+        });
+
+      }
+
+    }
+  );
+
+});
 
     if (!compile.success) {
 

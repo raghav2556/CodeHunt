@@ -31,6 +31,8 @@ export default function App() {
 const [user, setUser] = useState(null);
   const [isLogin, setIsLogin] = useState(true);
   const [authData, setAuthData] = useState({ username: "", email: "", password: "" });
+   const [authMessage, setAuthMessage] = useState("");
+const [authMessageType, setAuthMessageType] = useState("error");
 
   // ─── MAIN STATE ──────────────────────────────────────────────────────────────
   const [codeMap, setCodeMap] = useState({});
@@ -48,6 +50,7 @@ const [user, setUser] = useState(null);
   const [showSuccessActions, setShowSuccessActions] = useState(false);
   const [streak, setStreak] = useState(0);
   const username = localStorage.getItem("username");
+ 
 
   const [currentTopicIndex, setCurrentTopicIndex] = useState(0);
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
@@ -166,37 +169,69 @@ const key = `${currentTopicIndex}-${currentProblemIndex}`;
 
   // ─── AUTH HANDLER ────────────────────────────────────────────────────────────
   const handleAuth = async () => {
-    const endpoint = isLogin ? "login" : "signup";
-    try {
-      const response = await fetch(`http://localhost:5000/${endpoint}`, {
-  method: "POST",
-  credentials: "include",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify(authData),
-});
-      const data = await response.json();
 
-      if (isLogin && data.username) {
-  localStorage.setItem(
-    "username",
-    data.username
-  );
+  const endpoint =
+    isLogin ? "login" : "signup";
 
-  setUser(data);
+  try {
 
-  navigate("/dashboard");
-} else if (!isLogin && data.message) {
-        alert("Signup successful! Now login.");
-        setIsLogin(true);
-      } else {
-        alert(data.message || "Error occurred");
+    const response = await fetch(
+      `http://localhost:5000/${endpoint}`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(authData),
       }
-    } catch {
-      alert("Server not reachable");
+    );
+
+    const data = await response.json();
+
+    if (response.ok && isLogin && data.username) {
+
+      localStorage.setItem(
+        "username",
+        data.username
+      );
+
+      setUser(data);
+
+      navigate("/dashboard");
+
+      return;
     }
-  };
+
+    if (response.ok && !isLogin) {
+
+      setAuthMessageType("success");
+
+      setAuthMessage(
+        "Account created successfully. Please login."
+      );
+
+      setIsLogin(true);
+
+      return;
+    }
+
+    setAuthMessageType("error");
+
+    setAuthMessage(
+      data.message || "Something went wrong"
+    );
+
+  } catch {
+
+    setAuthMessageType("error");
+
+    setAuthMessage(
+      "Server not reachable"
+    );
+
+  }
+};
 
   const logout = async () => {
 
@@ -221,12 +256,14 @@ const key = `${currentTopicIndex}-${currentProblemIndex}`;
  if (!user) {
   return (
     <AuthScreen
-      isLogin={isLogin}
-      setIsLogin={setIsLogin}
-      authData={authData}
-      setAuthData={setAuthData}
-      handleAuth={handleAuth}
-    />
+  isLogin={isLogin}
+  setIsLogin={setIsLogin}
+  authData={authData}
+  setAuthData={setAuthData}
+  handleAuth={handleAuth}
+  authMessage={authMessage}
+  authMessageType={authMessageType}
+/>
   );
 }
 

@@ -13,7 +13,9 @@ function Node({ x, y, size, delay }) {
   );
 }
 
-export default function AuthScreen({ isLogin, setIsLogin, authData, setAuthData, handleAuth }) {
+export default function AuthScreen({ isLogin, setIsLogin, authData, setAuthData, handleAuth, authMessage,
+  authMessageType
+ }) {
   const [nodes] = useState(() =>
     Array.from({ length: 18 }, (_, i) => ({
       id: i,
@@ -25,6 +27,7 @@ export default function AuthScreen({ isLogin, setIsLogin, authData, setAuthData,
   );
 
   const [focused, setFocused] = useState(null);
+  const [authError, setAuthError] = useState("");
 
   const inputBase =
     "w-full px-4 py-3 rounded-lg font-mono text-[var(--text)] placeholder-[rgba(212,237,223,0.2)] " +
@@ -133,7 +136,13 @@ export default function AuthScreen({ isLogin, setIsLogin, authData, setAuthData,
                     value={authData.username}
                     onFocus={() => setFocused("username")}
                     onBlur={() => setFocused(null)}
-                    onChange={e => setAuthData({ ...authData, username: e.target.value })}
+                    onChange={e => {
+  setAuthError("");
+  setAuthData({
+    ...authData,
+    username: e.target.value
+  });
+}}
                     className={inputClass("username")}
                   />
                 </div>
@@ -149,7 +158,13 @@ export default function AuthScreen({ isLogin, setIsLogin, authData, setAuthData,
                   value={authData.email}
                   onFocus={() => setFocused("email")}
                   onBlur={() => setFocused(null)}
-                  onChange={e => setAuthData({ ...authData, email: e.target.value })}
+                  onChange={e => {
+  setAuthError("");
+  setAuthData({
+    ...authData,
+    email: e.target.value
+  });
+}}
                   className={inputClass("email")}
                 />
               </div>
@@ -164,11 +179,55 @@ export default function AuthScreen({ isLogin, setIsLogin, authData, setAuthData,
                   value={authData.password}
                   onFocus={() => setFocused("password")}
                   onBlur={() => setFocused(null)}
-                  onChange={e => setAuthData({ ...authData, password: e.target.value })}
+                  onChange={e => {
+  setAuthError("");
+  setAuthData({
+    ...authData,
+    password: e.target.value
+  });
+}}
                   onKeyDown={e => e.key === "Enter" && handleAuth()}
                   className={inputClass("password")}
                 />
               </div>
+             <AnimatePresence>
+  {authMessage && (
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      className={`
+        rounded-xl
+        px-4
+        py-3
+        border
+        ${
+          authMessageType === "success"
+            ? "border-green-500/30 bg-green-500/10"
+            : "border-red-500/30 bg-red-500/10"
+        }
+      `}
+    >
+      <p
+        className={`
+          text-xs
+          font-mono
+          tracking-wide
+          ${
+            authMessageType === "success"
+              ? "text-green-300"
+              : "text-red-300"
+          }
+        `}
+      >
+        {authMessageType === "success"
+          ? "✓"
+          : "⚠"}{" "}
+        {authMessage}
+      </p>
+    </motion.div>
+  )}
+</AnimatePresence>
 
               {/* Submit */}
               <motion.button
