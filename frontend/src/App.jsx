@@ -50,6 +50,7 @@ const [authMessageType, setAuthMessageType] = useState("error");
   const [showSuccessActions, setShowSuccessActions] = useState(false);
   const [streak, setStreak] = useState(0);
   const username = localStorage.getItem("username");
+  const [otpVerified, setOtpVerified] = useState(false);
  
 
   const [currentTopicIndex, setCurrentTopicIndex] = useState(0);
@@ -169,6 +170,12 @@ const key = `${currentTopicIndex}-${currentProblemIndex}`;
 
   // ─── AUTH HANDLER ────────────────────────────────────────────────────────────
   const handleAuth = async () => {
+    const payload = {
+  ...authData,
+  username: authData.username.trim(),
+  email: authData.email.trim().toLowerCase(),
+  password: authData.password
+};
 
   const endpoint =
     isLogin ? "login" : "signup";
@@ -183,7 +190,8 @@ const key = `${currentTopicIndex}-${currentProblemIndex}`;
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(authData),
+
+        body: JSON.stringify(payload),
       }
     );
 
@@ -233,7 +241,7 @@ const key = `${currentTopicIndex}-${currentProblemIndex}`;
   }
 };
 
-  const logout = async () => {
+const logout = async () => {
 
   await fetch(
     "http://localhost:5000/logout",
@@ -246,6 +254,16 @@ const key = `${currentTopicIndex}-${currentProblemIndex}`;
   localStorage.removeItem("username");
 
   setUser(null);
+
+  setAuthData({
+    username: "",
+    email: "",
+    password: ""
+  });
+
+  setAuthMessage("");
+
+  setIsLogin(true);
 
   setCurrentTopicIndex(0);
   setCurrentProblemIndex(0);
@@ -265,6 +283,9 @@ const key = `${currentTopicIndex}-${currentProblemIndex}`;
   authMessageType={authMessageType}
   setAuthMessage={setAuthMessage}
   setAuthMessageType={setAuthMessageType}
+  otpVerified={otpVerified}
+  setOtpVerified={setOtpVerified}
+
 />
   );
 }
@@ -355,7 +376,7 @@ const key = `${currentTopicIndex}-${currentProblemIndex}`;
 using namespace std;
 
 int main() {
-
+    
 
 
 
@@ -693,3 +714,4 @@ int main() {
     </div>
   );
 }
+

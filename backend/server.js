@@ -12,6 +12,16 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("./models/User");
 const Course = require("./models/Course");
+const nodemailer = require("nodemailer");
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+const Otp = require("./models/Otp");
 const Submission = require("./models/Submission");
 const express = require("express");
 const cors = require("cors");
@@ -69,12 +79,145 @@ app.use(passport.session());
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected ✅"))
   .catch(err => console.log("MongoDB Error ❌", err));
+ 
+  // ================= OTP =================
+  app.post("/send-otp", async (req, res) => {
+    let { username, email, password } = req.body;
+
+username = username?.trim();
+email = email?.trim().toLowerCase();
+
+  try {
+    const emailRegex =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        message: "Invalid email address"
+      });
+    }
+
+    const existingUser =
+      await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({
+        message: "User already exists"
+      });
+    }
+
+    const otp = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
+
+    await Otp.deleteMany({ email });
+
+    await Otp.create({
+      email,
+      otp,
+      expiresAt:
+        new Date(Date.now() + 10 * 60 * 1000)
+    });
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+
+      to: email,
+
+      subject: "CodeHunt Email Verification",
+
+      html: `
+        <h2>Verify your CodeHunt account</h2>
+
+        <p>Your OTP is:</p>
+
+        <h1>${otp}</h1>
+
+        <p>This code expires in 10 minutes.</p>
+      `
+    });
+
+    res.json({
+      message: "OTP sent successfully"
+    });
+
+  } catch {
+
+    res.status(500).json({
+      message: "Failed to send OTP"
+    });
+
+  }
+
+});
+
+app.post("/verify-otp", async (req, res) => {
+  let { email, otp } = req.body;
+
+email = email?.trim().toLowerCase();
+otp = otp?.trim();
+
+  try {
+    const otpDoc = await Otp.findOne({
+      email,
+      otp
+    });
+
+    if (!otpDoc) {
+      return res.status(400).json({
+        message: "Invalid OTP"
+      });
+    }
+
+    if (otpDoc.expiresAt < new Date()) {
+
+      await Otp.deleteOne({
+        _id: otpDoc._id
+      });
+
+      return res.status(400).json({
+        message: "OTP expired"
+      });
+    }
+
+    otpDoc.verified = true;
+
+    await otpDoc.save();
+
+    res.json({
+      message: "Email verified"
+    });
+
+  } catch {
+
+    res.status(500).json({
+      message: "OTP verification failed"
+    });
+
+  }
+
+});
+
+
 
 
 // ================= AUTH =================
 app.post("/signup", async (req, res) => {
+  let { username, email, password } = req.body;
+
+username = username?.trim();
+email = email?.trim().toLowerCase();
   try {
-    const { username, email, password } = req.body;
+    const verifiedOtp = await Otp.findOne({
+  email,
+  verified: true
+});
+
+if (!verifiedOtp) {
+  return res.status(400).json({
+    message: "Please verify your email first"
+  });
+}
 
 const emailRegex =
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -126,6 +269,8 @@ if (password.length > 64) {
       password: hashed
     }).save();
 
+    await Otp.deleteMany({ email });
+
     res.json({ message: "Signup successful" });
 
   } catch {
@@ -134,12 +279,13 @@ if (password.length > 64) {
 });
 
 app.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
+  let { email, password } = req.body;
 
+email = email?.trim().toLowerCase();
+  try {
     const user = await User.findOne({ email });
     if (!user)
-      return res.status(400).json({ message: "User not found" });
+      return res.status(400).json({ message: "User not found , Register first" });
 
     const match = await bcrypt.compare(password, user.password);
     if (!match)
