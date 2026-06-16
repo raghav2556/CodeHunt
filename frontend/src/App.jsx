@@ -30,7 +30,7 @@ export default function App() {
   // ─── AUTH ────────────────────────────────────────────────────────────────────
 const [user, setUser] = useState(null);
   const [isLogin, setIsLogin] = useState(true);
-  const [authData, setAuthData] = useState({ username: "", email: "", password: "" });
+  const [authData, setAuthData] = useState({ username: "", email: "", password: "", ConfirmPassword: ""});
    const [authMessage, setAuthMessage] = useState("");
 const [authMessageType, setAuthMessageType] = useState("error");
 
@@ -258,7 +258,8 @@ const logout = async () => {
   setAuthData({
     username: "",
     email: "",
-    password: ""
+    password: "",
+    ConfirmPassword: ""
   });
 
   setAuthMessage("");
@@ -285,6 +286,7 @@ const logout = async () => {
   setAuthMessageType={setAuthMessageType}
   otpVerified={otpVerified}
   setOtpVerified={setOtpVerified}
+  
 
 />
   );

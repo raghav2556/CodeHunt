@@ -15,7 +15,7 @@ function Node({ x, y, size, delay }) {
 }
 
 export default function AuthScreen({ isLogin, setIsLogin, authData, setAuthData, handleAuth, authMessage,
-  authMessageType, setAuthMessage, setAuthMessageType, otpVerified, setOtpVerified
+  authMessageType, setAuthMessage, setAuthMessageType, otpVerified, setOtpVerified, ConfirmPassword
  }) {
 
 
@@ -112,6 +112,20 @@ const password = authData.password;
 
     return;
   }
+
+  if (
+  authData.password !==
+  authData.confirmPassword
+) {
+
+  setAuthMessageType("error");
+
+  setAuthMessage(
+    "Passwords do not match"
+  );
+
+  return;
+}
 
   try {
 
@@ -269,6 +283,20 @@ const cleanOtp = otp.trim();
 
       return;
     }
+
+    if (
+  authData.password !==
+  authData.confirmPassword
+) {
+
+  setAuthMessageType("error");
+
+  setAuthMessage(
+    "Passwords do not match"
+  );
+
+  return;
+}
   }
 
   if (!isLogin && !otpVerified) {
@@ -383,7 +411,8 @@ const cleanOtp = otp.trim();
   setAuthData({
     username: "",
     email: "",
-    password: ""
+    password: "",
+    ConfirmPassword: ""
   });
 
   setIsLogin(i === 0);
@@ -460,46 +489,96 @@ setResendTimer(0);
                 />
               </div>
 
-              <div className="relative">
-  <input
-    type={showPassword ? "text" : "password"}
-    placeholder="••••••••••"
-    value={authData.password}
-    onFocus={() => setFocused("password")}
-    onBlur={() => setFocused(null)}
-    onChange={e => {
-      setAuthMessage("");
-      setAuthData({
-        ...authData,
-        password: e.target.value
-      });
-    }}
-    onKeyDown={e =>
-      e.key === "Enter" && validateAndSubmit()
-    }
-    className={`${inputClass("password")} pr-12`}
-  />
+              <div>
+  <label className="block text-[0.6rem] font-hud tracking-[0.2em] text-[var(--text-muted)] uppercase mb-1.5">
+    PASSKEY
+  </label>
 
-  <button
-    type="button"
-    onClick={() => setShowPassword(prev => !prev)}
-    className="
-      absolute
-      right-4
-      top-1/2
-      -translate-y-1/2
-      text-[var(--text-muted)]
-      hover:text-[var(--neon)]
-      transition-colors
-    "
-  >
-    {showPassword ? (
-      <FiEyeOff size={18} />
-    ) : (
-      <FiEye size={18} />
-    )}
-  </button>
+  <div className="relative">
+    <input
+      type={showPassword ? "text" : "password"}
+      placeholder="••••••••••"
+      value={authData.password}
+      onFocus={() => setFocused("password")}
+      onBlur={() => setFocused(null)}
+      onChange={e => {
+        setAuthMessage("");
+        setAuthData({
+          ...authData,
+          password: e.target.value
+        });
+      }}
+      onKeyDown={e =>
+        e.key === "Enter" && validateAndSubmit()
+      }
+      className={`${inputClass("password")} pr-12`}
+    />
+
+    <button
+      type="button"
+      onClick={() => setShowPassword(prev => !prev)}
+      className="
+        absolute
+        right-4
+        top-1/2
+        -translate-y-1/2
+        text-[var(--text-muted)]
+        hover:text-[var(--neon)]
+        transition-colors
+      "
+    >
+      {showPassword ? (
+        <FiEyeOff size={18} />
+      ) : (
+        <FiEye size={18} />
+      )}
+    </button>
+  </div>
 </div>
+
+{!isLogin && (
+  <div>
+    <label className="block text-[0.6rem] font-hud tracking-[0.2em] text-[var(--text-muted)] uppercase mb-1.5">
+      CONFIRM PASSKEY
+    </label>
+
+    <div className="relative">
+      <input
+        type={showPassword ? "text" : "password"}
+        placeholder="••••••••••"
+        value={authData.confirmPassword}
+        onChange={(e) => {
+          setAuthMessage("");
+          setAuthData({
+            ...authData,
+            confirmPassword: e.target.value
+          });
+        }}
+        className={`${inputClass("confirmPassword")} pr-12`}
+      />
+
+      <button
+        type="button"
+        onClick={() => setShowPassword(prev => !prev)}
+        className="
+          absolute
+          right-4
+          top-1/2
+          -translate-y-1/2
+          text-[var(--text-muted)]
+          hover:text-[var(--neon)]
+          transition-colors
+        "
+      >
+        {showPassword ? (
+          <FiEyeOff size={18} />
+        ) : (
+          <FiEye size={18} />
+        )}
+      </button>
+    </div>
+  </div>
+)}
               {!isLogin && (
   <div className="space-y-3">
 
@@ -734,7 +813,8 @@ setResendTimer(0);
   setAuthData({
     username: "",
     email: "",
-    password: ""
+    password: "",
+    Confirm: ""
   });
 
   setIsLogin(!isLogin);
