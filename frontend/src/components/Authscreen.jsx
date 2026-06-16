@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 /* animated background node */
 function Node({ x, y, size, delay }) {
@@ -36,6 +37,7 @@ export default function AuthScreen({ isLogin, setIsLogin, authData, setAuthData,
 const [otpSent, setOtpSent] = useState(false);
 const [resendTimer, setResendTimer] = useState(0);
 const [showPassword, setShowPassword] = useState(false);
+const navigate = useNavigate();
 
 useEffect(() => {
 
@@ -719,6 +721,23 @@ setResendTimer(0);
               >
                 {isLogin ? "▶ INITIATE ACCESS" : "▶ ENLIST NOW"}
               </motion.button>
+
+              {isLogin && (
+  <button
+    type="button"
+    onClick={() => navigate("/forgot-password")}
+    className="
+      mt-4
+      w-full
+      text-xs
+      text-[var(--cyan)]
+      hover:text-white
+      transition-colors
+    "
+  >
+    Forgot Passkey?
+  </button>
+)}
             
 
             {/* OAuth Divider */}

@@ -82,6 +82,7 @@ mongoose.connect(process.env.MONGO_URI)
  
   // ================= OTP =================
   app.post("/send-otp", async (req, res) => {
+    const purpose = req.body.purpose || "signup";
     let { username, email, password } = req.body;
 
 username = username?.trim();
@@ -97,27 +98,35 @@ email = email?.trim().toLowerCase();
       });
     }
 
-    const existingUser =
-      await User.findOne({ email });
+    const existingUser = await User.findOne({ email });
 
-    if (existingUser) {
-      return res.status(400).json({
-        message: "User already exists"
-      });
-    }
+if (purpose === "signup" && existingUser) {
+  return res.status(400).json({
+    message: "User already exists"
+  });
+}
+
+if (purpose === "reset" && !existingUser) {
+  return res.status(400).json({
+    message: "User not found"
+  });
+}
 
     const otp = Math.floor(
       100000 + Math.random() * 900000
     ).toString();
 
-    await Otp.deleteMany({ email });
+    await Otp.deleteMany({
+  email,
+  purpose
+});
 
     await Otp.create({
-      email,
-      otp,
-      expiresAt:
-        new Date(Date.now() + 10 * 60 * 1000)
-    });
+  email,
+  otp,
+  purpose,
+  expiresAt: new Date(Date.now() + 10 * 60 * 1000)
+});
 
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
@@ -152,6 +161,7 @@ email = email?.trim().toLowerCase();
 });
 
 app.post("/verify-otp", async (req, res) => {
+  const purpose = req.body.purpose || "signup";
   let { email, otp } = req.body;
 
 email = email?.trim().toLowerCase();
@@ -159,9 +169,10 @@ otp = otp?.trim();
 
   try {
     const otpDoc = await Otp.findOne({
-      email,
-      otp
-    });
+  email,
+  otp,
+  purpose
+});
 
     if (!otpDoc) {
       return res.status(400).json({
@@ -208,9 +219,10 @@ app.post("/signup", async (req, res) => {
 username = username?.trim();
 email = email?.trim().toLowerCase();
   try {
-    const verifiedOtp = await Otp.findOne({
+   const verifiedOtp = await Otp.findOne({
   email,
-  verified: true
+  verified: true,
+  purpose: "signup"
 });
 
 if (!verifiedOtp) {
@@ -257,9 +269,19 @@ if (password.length > 64) {
   });
 }
 
-    const existing = await User.findOne({ email });
-    if (existing)
-      return res.status(400).json({ message: "User already exists" });
+    const existingUser = await User.findOne({ email });
+
+if (purpose === "signup" && existingUser) {
+  return res.status(400).json({
+    message: "User already exists"
+  });
+}
+
+if (purpose === "reset" && !existingUser) {
+  return res.status(400).json({
+    message: "User not found"
+  });
+}
 
     const hashed = await bcrypt.hash(password, 10);
 
@@ -269,7 +291,10 @@ if (password.length > 64) {
       password: hashed
     }).save();
 
-    await Otp.deleteMany({ email });
+    await Otp.deleteMany({
+  email,
+  purpose: "signup"
+});
 
     res.json({ message: "Signup successful" });
 
@@ -313,6 +338,69 @@ res.json({
   }
 });
 
+//Reset Pass
+app.post("/reset-password", async (req, res) => {
+
+  let {
+    email,
+    password
+  } = req.body;
+
+  email = email?.trim().toLowerCase();
+
+  try {
+
+    const verifiedOtp = await Otp.findOne({
+      email,
+      verified: true,
+      purpose: "reset"
+    });
+
+    if (!verifiedOtp) {
+      return res.status(400).json({
+        message: "Please verify your OTP first"
+      });
+    }
+
+    if (password.length < 8 ||
+        password.length > 64) {
+
+      return res.status(400).json({
+        message: "Password must be 8–64 characters"
+      });
+    }
+
+    const hashed = await bcrypt.hash(
+      password,
+      10
+    );
+
+    await User.updateOne(
+      { email },
+      { password: hashed }
+    );
+
+    await Otp.deleteMany({
+      email,
+      purpose: "reset"
+    });
+
+    res.json({
+      message: "Password updated successfully"
+    });
+
+  } catch {
+
+    res.status(500).json({
+      message: "Password reset failed"
+    });
+
+  }
+
+});
+
+
+//Logout
 app.post("/logout", (req, res) => {
 
   res.clearCookie("token");

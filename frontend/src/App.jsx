@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation, Navigate } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
 import AuthScreen from "./components/Authscreen";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import MainPanel from "./components/MainPanel";
 import Profile from "./components/Profile";
+import ForgotPassword from "./components/ForgotPassword";
 import { useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -269,26 +270,40 @@ const logout = async () => {
   setCurrentTopicIndex(0);
   setCurrentProblemIndex(0);
   setCurrentView("topic");
+
+  navigate("/");
 };
 
   // ─── NOT LOGGED IN ───────────────────────────────────────────────────────────
  if (!user) {
   return (
-    <AuthScreen
-  isLogin={isLogin}
-  setIsLogin={setIsLogin}
-  authData={authData}
-  setAuthData={setAuthData}
-  handleAuth={handleAuth}
-  authMessage={authMessage}
-  authMessageType={authMessageType}
-  setAuthMessage={setAuthMessage}
-  setAuthMessageType={setAuthMessageType}
-  otpVerified={otpVerified}
-  setOtpVerified={setOtpVerified}
-  
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <AuthScreen
+            isLogin={isLogin}
+            setIsLogin={setIsLogin}
+            authData={authData}
+            setAuthData={setAuthData}
+            handleAuth={handleAuth}
+            authMessage={authMessage}
+            authMessageType={authMessageType}
+            setAuthMessage={setAuthMessage}
+            setAuthMessageType={setAuthMessageType}
+            otpVerified={otpVerified}
+            setOtpVerified={setOtpVerified}
+          />
+        }
+      />
 
-/>
+      <Route
+        path="/forgot-password"
+        element={<ForgotPassword />}
+      />
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 
