@@ -47,8 +47,7 @@ export default function MainPanel({
 
   const loadSubmissions = async () => {
     const problemKey = `${currentTopicIndex}-${currentProblemIndex}`;
-    const res = await fetch(
-  `http://localhost:5000/submissions/${problemKey}`,
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/submissions/${problemKey}`,
   {
     credentials: "include",
   }

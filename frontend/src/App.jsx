@@ -65,8 +65,7 @@ const [authMessageType, setAuthMessageType] = useState("error");
   useEffect(() => {
   const checkAuth = async () => {
     try {
-      const res = await fetch(
-        "http://localhost:5000/me",
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/me`,
         {
           credentials: "include",
         }
@@ -107,7 +106,7 @@ const key = `${currentTopicIndex}-${currentProblemIndex}`;
 
     const loadProgress = async () => {
       try {
-        const progressRes = await fetch("http://localhost:5000/load-progress", {
+        const progressRes = await fetch(`${import.meta.env.VITE_API_URL}/load-progress`, {
          credentials: "include",
         });
         const progressData = await progressRes.json();
@@ -117,7 +116,7 @@ const key = `${currentTopicIndex}-${currentProblemIndex}`;
         setStreak(progressData.streak ?? 0);
         setAchievements(progressData.achievements || []);
 
-        const codeRes = await fetch("http://localhost:5000/load-code", {
+        const codeRes = await fetch(`${import.meta.env.VITE_API_URL}/load-code`, {
           credentials: "include",
         });
         const codeData = await codeRes.json();
@@ -162,7 +161,7 @@ const key = `${currentTopicIndex}-${currentProblemIndex}`;
 
   useEffect(() => {
     const loadCourse = async () => {
-      const res = await fetch("http://localhost:5000/course/cpp");
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/course/cpp`);
       const data = await res.json();
       setCourse(data.topics);
     };
@@ -183,8 +182,7 @@ const key = `${currentTopicIndex}-${currentProblemIndex}`;
 
   try {
 
-    const response = await fetch(
-      `http://localhost:5000/${endpoint}`,
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/${endpoint}`,
       {
         method: "POST",
         credentials: "include",
@@ -244,8 +242,7 @@ const key = `${currentTopicIndex}-${currentProblemIndex}`;
 
 const logout = async () => {
 
-  await fetch(
-    "http://localhost:5000/logout",
+  await fetch(`${import.meta.env.VITE_API_URL}/logout`,
     {
       method: "POST",
       credentials: "include"
@@ -427,7 +424,7 @@ int main() {
     if (unlocked.length > 0) {
       const updated = [...achievements, ...unlocked];
 
-      await fetch("http://localhost:5000/save-achievements", {
+      await fetch(`${import.meta.env.VITE_API_URL}/save-achievements`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -451,7 +448,7 @@ int main() {
     setHint("");
 
     try {
-      const response = await fetch("http://localhost:5000/run", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/run`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -483,7 +480,7 @@ int main() {
           setShowSuccessActions(true);
 
           if (!progress[key]) {
-            const saveResponse = await fetch("http://localhost:5000/save-progress", {
+            const saveResponse = await fetch(`${import.meta.env.VITE_API_URL}/save-progress`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -525,7 +522,7 @@ int main() {
     const mode = failedTest ? "debug" : "start";
 
     try {
-      const response = await fetch("http://localhost:5000/hint", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/hint`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -615,7 +612,7 @@ int main() {
                       if (saveTimeout.current) clearTimeout(saveTimeout.current);
 
                       saveTimeout.current = setTimeout(() => {
-                        fetch("http://localhost:5000/save-code", {
+                        fetch(`${import.meta.env.VITE_API_URL}/save-code`, {
                                 method: "POST",
                                 credentials: "include",
                                 headers: {

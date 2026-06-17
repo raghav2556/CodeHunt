@@ -131,8 +131,7 @@ const password = authData.password;
 
   try {
 
-    const response = await fetch(
-      "http://localhost:5000/send-otp",
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/send-otp`,
       {
         method: "POST",
         headers: {
@@ -185,8 +184,7 @@ const cleanOtp = otp.trim();
 
   try {
 
-    const response = await fetch(
-      "http://localhost:5000/verify-otp",
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/verify-otp`,
       {
         method: "POST",
         headers: {
@@ -757,7 +755,7 @@ setResendTimer(0);
     whileTap={{ scale: 0.97 }}
     onClick={() =>
       window.location.href =
-      "http://localhost:5000/auth/google"
+  `${import.meta.env.VITE_API_URL}/auth/google`;
     }
     className="
       w-full
@@ -785,7 +783,7 @@ setResendTimer(0);
     whileTap={{ scale: 0.97 }}
     onClick={() =>
       window.location.href =
-      "http://localhost:5000/auth/github"
+  `${import.meta.env.VITE_API_URL}/auth/github`;
     }
     className="
       w-full

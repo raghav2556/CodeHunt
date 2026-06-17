@@ -34,8 +34,7 @@ const inputClass = (name) =>
 
   try {
 
-    const response = await fetch(
-      "http://localhost:5000/send-otp",
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/send-otp`,
       {
         method: "POST",
         headers: {
@@ -99,8 +98,7 @@ const updatePassword = async () => {
     return;
   }
 
-  const verifyRes = await fetch(
-    "http://localhost:5000/verify-otp",
+  const verifyRes = await fetch(`${import.meta.env.VITE_API_URL}/verify-otp`,
     {
       method: "POST",
       headers: {
@@ -125,8 +123,7 @@ const updatePassword = async () => {
     return;
   }
 
-  const resetRes = await fetch(
-    "http://localhost:5000/reset-password",
+  const resetRes = await fetch(`${import.meta.env.VITE_API_URL}/reset-password`,
     {
       method: "POST",
       headers: {
