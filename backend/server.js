@@ -897,7 +897,7 @@ app.get("/submissions/:problemKey", authMiddleware, async (req, res) => {
 
 });
 
-app.use(
+/*app.use(
   express.static(
     path.join(__dirname, "../frontend/dist")
   )
@@ -911,7 +911,7 @@ app.get("*", (req, res) => {
       "index.html"
     )
   );
-});
+});*/
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
