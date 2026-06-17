@@ -2,13 +2,13 @@
 
 > Hunt. Level Up. Master C++.
 
-CodeHunt is a full-stack coding academy platform built to provide a structured learning path for beginners learning C++. Unlike traditional coding platforms that focus only on problem solving, CodeHunt combines guided notes, staged progression, coding challenges, AI-powered hints, achievements, and gamification into a single learning experience.
+CodeHunt is a full-stack coding academy platform designed to help beginners learn C++ through a structured, gamified, and AI-assisted experience. Unlike traditional coding platforms that focus only on problem solving, CodeHunt combines guided notes, progressive learning stages, coding challenges, AI-powered hints, achievements, and real-time code execution into a single learning ecosystem.
 
 ---
 
 # ✨ Features
 
-## Authentication & Security
+## 🔐 Authentication & Security
 
 * Email / Password Authentication
 * Google OAuth Login
@@ -17,71 +17,84 @@ CodeHunt is a full-stack coding academy platform built to provide a structured l
 * HttpOnly Cookie-Based Sessions
 * Secure Password Hashing (bcrypt)
 * Persistent Login Sessions
+* Email OTP Verification for Signup
+* OTP-Based Password Recovery
+* Dedicated Forgot Password Flow
+* Password Visibility Toggle
+* Confirm Password Validation
+* Frontend & Backend Input Validation
+* Protected Routes with Automatic Redirects
+* MongoDB TTL-Based OTP Expiration
+* Single Active OTP Per Email
 
 ---
 
-## Learning System
+## 📚 Learning System
 
-* Structured C++ Course
+* Structured C++ Learning Path
 * Topic-Based Learning Flow
 * Stage Locking & Unlocking
 * Guided Notes for Every Topic
 * Progressive Difficulty System
 * Beginner-Friendly C++ Starter Template
+* Dynamic Course Loading
 
 ---
 
-## Coding Environment
+## 💻 Coding Environment
 
 * Monaco Editor Integration
-* Real C++ Code Execution
-* g++ Judge Engine
-* Compile Error Handling
-* Runtime Error Handling
+* Real-Time C++ Code Execution
+* Custom g++ Judge Engine
+* Compile Error Detection
+* Runtime Error Detection
 * Output Normalization
 * Temporary File Cleanup
+* Submission History Tracking
 
 ---
 
-## AI Features
+## 🤖 AI Features
 
 * Groq-Powered AI Hint System
 * Context-Aware Hint Generation
-* Intelligent Guidance Before/After Code Execution
+* Intelligent Guidance Before and After Code Execution
 
 ---
 
-## Gamification
+## 🎮 Gamification
 
 * XP System
 * Level System
-* Daily Streaks
+* Daily Streak Tracking
 * Achievement System
-* Achievement Popups
+* Achievement Unlock Notifications
 * Profile Statistics
 
 ---
 
-## Progress Tracking
+## 📈 Progress Tracking
 
 * Problem Completion Tracking
-* Submission History
 * Code Auto-Save
 * Persistent Progress Storage
+* Submission History
 * Achievement Persistence
 * Resume Learning Capability
 
 ---
 
-## UI/UX
+## 🎨 UI/UX
 
-* Modern Cyberpunk Theme
+* Cyberpunk-Inspired Interface
+* Glassmorphism Components
 * Framer Motion Animations
-* Responsive Layout
-* Topic Home Screen
-* Dashboard Analytics
+* Responsive Design
+* Dashboard Experience
 * Profile Page
 * Smooth Route Transitions
+* Dedicated Authentication Screens
+* Consistent OTP & Password Recovery UI
 
 ---
 
@@ -104,6 +117,8 @@ CodeHunt is a full-stack coding academy platform built to provide a structured l
 * Mongoose
 * JWT
 * Passport.js
+* bcrypt
+* Nodemailer
 * Google OAuth 2.0
 * GitHub OAuth
 
@@ -119,96 +134,135 @@ CodeHunt is a full-stack coding academy platform built to provide a structured l
 
 # 📂 Project Structure
 
+```text
 CodeHunt
-
 ├── frontend
-
-│ ├── components
-
-│ │ ├── AuthScreen.jsx
-
-│ │ ├── Dashboard.jsx
-
-│ │ ├── MainPanel.jsx
-
-│ │ ├── Navbar.jsx
-
-│ │ ├── Profile.jsx
-
-│ │ └── Sidebar.jsx
-
-│ ├── App.jsx
-
-│ └── index.css
-
+│   ├── components
+│   │   ├── AuthScreen.jsx
+│   │   ├── ForgotPassword.jsx
+│   │   ├── Dashboard.jsx
+│   │   ├── MainPanel.jsx
+│   │   ├── Navbar.jsx
+│   │   ├── Profile.jsx
+│   │   └── Sidebar.jsx
+│   │
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── index.css
 │
-
 ├── backend
-
-│ ├── models
-
-│ │ ├── User.js
-
-│ │ ├── Course.js
-
-│ │ └── Submission.js
-
-│ │
-
-│ ├── middleware
-
-│ │ └── auth.js
-
-│ │
-
-│ ├── config
-
-│ │ └── passport.js
-
-│ │
-
-│ └── server.js
-
+│   ├── models
+│   │   ├── User.js
+│   │   ├── Otp.js
+│   │   ├── Course.js
+│   │   └── Submission.js
+│   │
+│   ├── middleware
+│   │   └── auth.js
+│   │
+│   ├── config
+│   │   └── passport.js
+│   │
+│   └── server.js
 │
-
 └── README.md
+```
 
 ---
 
 # 🧠 Architecture Flow
 
 ```text
-                 ┌────────────────────┐
-                 │      Frontend      │
-                 │       React        │
-                 └─────────┬──────────┘
-                           │
-                           ▼
-                 ┌────────────────────┐
-                 │     Express API    │
-                 │      Node.js       │
-                 └─────────┬──────────┘
-                           │
-         ┌─────────────────┼─────────────────┐
-         │                 │                 │
-         ▼                 ▼                 ▼
+                     ┌────────────────────┐
+                     │      Frontend      │
+                     │       React        │
+                     └─────────┬──────────┘
+                               │
+                               ▼
+                     ┌────────────────────┐
+                     │     Express API    │
+                     │      Node.js       │
+                     └─────────┬──────────┘
+                               │
+        ┌──────────────────────┼──────────────────────┐
+        │                      │                      │
+        ▼                      ▼                      ▼
 
- ┌────────────┐   ┌──────────────┐   ┌─────────────┐
- │ Auth Layer │   │ Judge Engine │   │ AI Hint API │
- │ JWT/OAuth  │   │ g++ Compile  │   │    Groq     │
- └─────┬──────┘   └──────┬───────┘   └──────┬──────┘
-       │                 │                  │
-       └─────────────────┼──────────────────┘
-                         │
-                         ▼
-                ┌─────────────────┐
-                │   MongoDB Atlas │
-                └─────────────────┘
+ ┌──────────────┐     ┌──────────────┐      ┌─────────────┐
+ │ Auth Service │     │ Judge Engine │      │ AI Hint API │
+ │ JWT + OAuth  │     │ g++ Compiler │      │    Groq     │
+ │ OTP + Email  │     │ Code Runner  │      │             │
+ └──────┬───────┘     └──────┬───────┘      └──────┬──────┘
+        │                    │                     │
+        └────────────────────┼─────────────────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │   MongoDB Atlas │
+                    └─────────────────┘
 ```
 
 ---
 
-# 🎮 Learning Flow
+# 🔐 Authentication Flow
+
+```text
+Register
+    │
+    ▼
+Enter Details
+    │
+    ▼
+Send OTP
+    │
+    ▼
+Verify Email
+    │
+    ▼
+Create Account
+    │
+    ▼
+HttpOnly Cookie Session
+```
+
+```text
+Login / OAuth
+       │
+       ▼
+ Passport / JWT
+       │
+       ▼
+ HttpOnly Cookie
+       │
+       ▼
+ Protected Routes
+       │
+       ▼
+ MongoDB User Data
+```
+
+```text
+Forgot Password
+       │
+       ▼
+Enter Registered Email
+       │
+       ▼
+Send OTP
+       │
+       ▼
+Verify OTP
+       │
+       ▼
+Set New Password
+       │
+       ▼
+Login
+```
+
+---
+
+# 🎓 Learning Flow
 
 ```text
 Dashboard
@@ -219,32 +273,25 @@ Topic Home
  ┌──┴──┐
  ▼     ▼
 
-Notes Problems
-
-│
-▼
-
-Problem List
-│
-▼
-
-Problem View
-│
-▼
-
-Run Code
-│
-▼
-
-Submit
-│
-▼
-
+Notes  Problems
+          │
+          ▼
+     Problem List
+          │
+          ▼
+      Problem View
+          │
+          ▼
+       Run Code
+          │
+          ▼
+        Submit
+          │
+          ▼
 XP + Progress + Achievements
-│
-▼
-
-Unlock Next Problem
+          │
+          ▼
+   Unlock Next Problem
 ```
 
 ---
@@ -255,39 +302,19 @@ Unlock Next Problem
 Accepted Solution
         │
         ▼
-Gain XP
+      Gain XP
         │
         ▼
-Update Level
+   Update Level
         │
         ▼
-Update Streak
+   Update Streak
         │
         ▼
 Check Achievements
         │
         ▼
-Save to MongoDB
-```
-
----
-
-# 🔐 Authentication Flow
-
-```text
-Login / OAuth
-        │
-        ▼
-Passport / JWT
-        │
-        ▼
-HttpOnly Cookie
-        │
-        ▼
-Protected Routes
-        │
-        ▼
-MongoDB User Data
+  Save to MongoDB
 ```
 
 ---
@@ -297,20 +324,21 @@ MongoDB User Data
 * Multiple Programming Languages
 * DSA Learning Tracks
 * Contest System
-* Leaderboards
+* Global Leaderboards
 * Peer Challenges
-* Code Review System
 * Discussion Forums
+* Code Review System
 * Personalized Learning Paths
 * Premium AI Mentor
 * Mobile Application
+* Backend Rate Limiting
+* Branded Email Templates
 
 ---
 
 # 👨‍💻 Author
 
-Built by Raghvendra Shah
+Built by **Raghvendra Shah**
 
 CodeHunt is designed to help beginners learn programming through a structured, gamified, and AI-assisted learning experience.
-"""
 
