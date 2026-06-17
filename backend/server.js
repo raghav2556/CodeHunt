@@ -273,15 +273,9 @@ if (password.length > 64) {
 
     const existingUser = await User.findOne({ email });
 
-if (purpose === "signup" && existingUser) {
+if (existingUser) {
   return res.status(400).json({
     message: "User already exists"
-  });
-}
-
-if (purpose === "reset" && !existingUser) {
-  return res.status(400).json({
-    message: "User not found"
   });
 }
 
@@ -456,14 +450,15 @@ app.get(
     );
 res.cookie("token", token, {
   httpOnly: true,
-  secure: false,
-  sameSite: "lax",
+  secure: process.env.NODE_ENV === "production",
+  sameSite:
+    process.env.NODE_ENV === "production"
+      ? "none"
+      : "lax",
   maxAge: 24 * 60 * 60 * 1000
 });
 
-res.redirect(
- "http://localhost:5173/dashboard"
-);
+res.redirect(`${process.env.CLIENT_URL}/dashboard`);
 
   }
 );
@@ -490,14 +485,15 @@ app.get(
     );
 res.cookie("token", token, {
   httpOnly: true,
-  secure: false,
-  sameSite: "lax",
+  secure: process.env.NODE_ENV === "production",
+  sameSite:
+    process.env.NODE_ENV === "production"
+      ? "none"
+      : "lax",
   maxAge: 24 * 60 * 60 * 1000
 });
 
-res.redirect(
- "http://localhost:5173/dashboard"
-);
+res.redirect(`${process.env.CLIENT_URL}/dashboard`);
 
   }
 );
@@ -842,9 +838,6 @@ Do NOT give corrected code.
   }
 });
 
-const PORT = 5000;
-app.listen(PORT, () => console.log(`Server running on ${PORT}`));
-
 app.post("/save-code", authMiddleware, async (req, res) => {
 
   const { problemKey, code } = req.body;
@@ -903,4 +896,23 @@ app.get("/submissions/:problemKey", authMiddleware, async (req, res) => {
   res.json(submissions);
 
 });
+
+app.use(
+  express.static(
+    path.join(__dirname, "../frontend/dist")
+  )
+);
+
+app.get("*", (req, res) => {
+  res.sendFile(
+    path.join(
+      __dirname,
+      "../frontend/dist",
+      "index.html"
+    )
+  );
+});
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on ${PORT}`));
 
