@@ -59,10 +59,12 @@ function safeCleanup(file, exe) {
 
 // ================= APP SETUP =================
 const app = express();
-app.use(cors({
-  origin: "http://localhost:5173",
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true
+  })
+);
 app.use(express.json());
 app.use(
   session({
@@ -324,8 +326,11 @@ email = email?.trim().toLowerCase();
 
 res.cookie("token", token, {
   httpOnly: true,
-  secure: false, // true after deployment with HTTPS
-  sameSite: "lax",
+  secure: process.env.NODE_ENV === "production",
+  sameSite:
+    process.env.NODE_ENV === "production"
+      ? "none"
+      : "lax",
   maxAge: 24 * 60 * 60 * 1000
 });
 
@@ -403,7 +408,14 @@ app.post("/reset-password", async (req, res) => {
 //Logout
 app.post("/logout", (req, res) => {
 
-  res.clearCookie("token");
+  res.clearCookie("token", {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite:
+    process.env.NODE_ENV === "production"
+      ? "none"
+      : "lax"
+});
 
   res.json({
     message: "Logged out"
