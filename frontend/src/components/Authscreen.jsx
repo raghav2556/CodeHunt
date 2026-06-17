@@ -753,10 +753,10 @@ setResendTimer(0);
   <motion.button
     whileHover={{ scale: 1.02 }}
     whileTap={{ scale: 0.97 }}
-    onClick={() =>
+    onClick={() =>{
       window.location.href =
   `${import.meta.env.VITE_API_URL}/auth/google`;
-    }
+    }}
     className="
       w-full
       py-3
@@ -781,10 +781,10 @@ setResendTimer(0);
   <motion.button
     whileHover={{ scale: 1.02 }}
     whileTap={{ scale: 0.97 }}
-    onClick={() =>
+    onClick={() =>{
       window.location.href =
   `${import.meta.env.VITE_API_URL}/auth/github`;
-    }
+    }}
     className="
       w-full
       py-3
