@@ -2,6 +2,7 @@
 require("dotenv").config();
 const cookieParser = require("cookie-parser");
 const Groq = require("groq-sdk");
+const redis = require("./config/redis");
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY
