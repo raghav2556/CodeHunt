@@ -8,6 +8,15 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY
 });
 
+const {
+  loginLimiter,
+  signupLimiter,
+  otpLimiter,
+  verifyOtpLimiter,
+  resetPasswordLimiter,
+  runLimiter
+} = require("./middleware/rateLimit");
+
 const authMiddleware = require("./middleware/auth");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -27,7 +36,7 @@ const Submission = require("./models/Submission");
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const { exec } = require("child_process");
+const { spawn } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 const passport = require("./config/passport");
@@ -84,7 +93,7 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.log("MongoDB Error ❌", err));
  
   // ================= OTP =================
-  app.post("/send-otp", async (req, res) => {
+  app.post("/send-otp", otpLimiter, async (req, res) => {
     const purpose = req.body.purpose || "signup";
     let { username, email, password } = req.body;
 
@@ -163,7 +172,7 @@ if (purpose === "reset" && !existingUser) {
 
 });
 
-app.post("/verify-otp", async (req, res) => {
+app.post("/verify-otp", verifyOtpLimiter, async (req, res) => {
   const purpose = req.body.purpose || "signup";
   let { email, otp } = req.body;
 
@@ -216,7 +225,7 @@ otp = otp?.trim();
 
 
 // ================= AUTH =================
-app.post("/signup", async (req, res) => {
+app.post("/signup", signupLimiter, async (req, res) => {
   let { username, email, password } = req.body;
 
 username = username?.trim();
@@ -300,7 +309,7 @@ if (existingUser) {
   }
 });
 
-app.post("/login", async (req, res) => {
+app.post("/login", loginLimiter, async (req, res) => {
   let { email, password } = req.body;
 
 email = email?.trim().toLowerCase();
@@ -339,7 +348,7 @@ res.json({
 });
 
 //Reset Pass
-app.post("/reset-password", async (req, res) => {
+app.post("/reset-password", resetPasswordLimiter, async (req, res) => {
 
   let {
     email,
@@ -593,7 +602,7 @@ app.get("/load-progress", authMiddleware, async (req, res) => {
 
 
 // ================= RUN CODE (IMPROVED JUDGE) =================
-app.post("/run", authMiddleware, async (req, res) => {
+app.post("/run", authMiddleware, runLimiter, async (req, res) => {
 
   const { code, testCases, problemKey } = req.body;
 
@@ -606,41 +615,53 @@ app.post("/run", authMiddleware, async (req, res) => {
     fs.writeFileSync(fileName, code);
 
     // ===== COMPILE =====
-    const compile = await new Promise((resolve) => {
+   const compile = await new Promise((resolve) => {
 
   console.log("Compiling:", fileName);
 
-  exec(
-    `g++ "${fileName}" -o "${exeName}"`,
-    { timeout: 5000 },
-    (err, stdout, stderr) => {
+  const compiler = spawn("g++", [
+    fileName,
+    "-o",
+    exeName
+  ]);
 
-      if (err) {
+  let stderr = "";
 
-        console.log("Compile Error:", err);
-        console.log("Compile STDERR:", stderr);
-        console.log("Compile STDOUT:", stdout);
+  const timeout = setTimeout(() => {
+    compiler.kill();
 
-        resolve({
-          success: false,
-          error:
-            stderr ||
-            err.message ||
-            "Compilation failed"
-        });
+    resolve({
+      success: false,
+      error: "Compilation timed out"
+    });
+  }, 30000);
 
-      } else {
+  compiler.stderr.on("data", (data) => {
+    stderr += data.toString();
+  });
 
-        console.log("Compile Success");
+  compiler.on("close", (code) => {
 
-        resolve({
-          success: true
-        });
+    clearTimeout(timeout);
 
-      }
+    if (code !== 0) {
+
+      resolve({
+        success: false,
+        error: stderr || "Compilation failed"
+      });
+
+    } else {
+
+      console.log("Compile Success");
+
+      resolve({
+        success: true
+      });
 
     }
-  );
+
+  });
 
 });
 
@@ -674,16 +695,37 @@ app.post("/run", authMiddleware, async (req, res) => {
 
         const output = await new Promise((resolve, reject) => {
 
-          const child = exec(path.resolve(exeName), { timeout: 3000 }, (runErr, stdout) => {
+          const executable = spawn(path.resolve(exeName));
 
-            if (runErr) return reject();
+let stdout = "";
+let stderr = "";
 
-            resolve(stdout || "");
+const timeout = setTimeout(() => {
+  executable.kill();
+  reject(new Error("Time Limit Exceeded"));
+}, 3000);
 
-          });
+executable.stdout.on("data", (data) => {
+  stdout += data.toString();
+});
 
-          child.stdin.write(test.input || "");
-          child.stdin.end();
+executable.stderr.on("data", (data) => {
+  stderr += data.toString();
+});
+
+executable.on("close", (code) => {
+
+  clearTimeout(timeout);
+
+  if (code !== 0) {
+    return reject(new Error(stderr || "Runtime Error"));
+  }
+
+  resolve(stdout);
+});
+
+executable.stdin.write(test.input || "");
+executable.stdin.end();
 
         });
 
@@ -697,12 +739,12 @@ app.post("/run", authMiddleware, async (req, res) => {
           passed: normalizedUser === normalizedExpected
         });
 
-      } catch {
+      } catch (err) {
 
         results.push({
           input: test.input,
           expected: test.expected,
-          output: "Runtime Error",
+          output: err.message || "Runtime Error",
           passed: false
         });
 
