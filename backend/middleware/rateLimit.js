@@ -40,11 +40,18 @@ const signupLimiter = createLimiter({
     "Too many signup attempts. Please try again later."
 });
 
-const otpLimiter = createLimiter({
+const signupOtpLimiter = createLimiter({
   windowMs: 10 * 60 * 1000,
   max: 5,
   message:
-    "Too many OTP requests. Please try again in 10 minutes."
+    "Too many signup OTP requests. Please try again in 10 minutes."
+});
+
+const resetOtpLimiter = createLimiter({
+  windowMs: 10 * 60 * 1000,
+  max: 3,
+  message:
+    "Too many password reset OTP requests. Please try again in 10 minutes."
 });
 
 const verifyOtpLimiter = createLimiter({
@@ -71,7 +78,8 @@ const runLimiter = createLimiter({
 module.exports = {
   loginLimiter,
   signupLimiter,
-  otpLimiter,
+  signupOtpLimiter,
+  resetOtpLimiter,
   verifyOtpLimiter,
   resetPasswordLimiter,
   runLimiter

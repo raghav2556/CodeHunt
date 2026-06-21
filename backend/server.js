@@ -11,7 +11,8 @@ const groq = new Groq({
 const {
   loginLimiter,
   signupLimiter,
-  otpLimiter,
+  signupOtpLimiter,
+  resetOtpLimiter,
   verifyOtpLimiter,
   resetPasswordLimiter,
   runLimiter
@@ -23,6 +24,7 @@ const jwt = require("jsonwebtoken");
 const User = require("./models/User");
 const Course = require("./models/Course");
 const nodemailer = require("nodemailer");
+const emailQueue = require("./queues/emailQueue");
 const transporter = nodemailer.createTransport({
   service: "gmail",
 
@@ -93,7 +95,16 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.log("MongoDB Error ❌", err));
  
   // ================= OTP =================
-  app.post("/send-otp", otpLimiter, async (req, res) => {
+ app.post("/send-otp", (req, res, next) => {
+
+  const limiter =
+    req.body.purpose === "reset"
+      ? resetOtpLimiter
+      : signupOtpLimiter;
+
+  limiter(req, res, next);
+
+}, async (req, res) => {
     const purpose = req.body.purpose || "signup";
     let { username, email, password } = req.body;
 
@@ -140,27 +151,32 @@ if (purpose === "reset" && !existingUser) {
   expiresAt: new Date(Date.now() + 10 * 60 * 1000)
 });
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+await emailQueue.add(
+  "send-otp",
 
-      to: email,
+  {
+    email,
+    otp,
+    purpose
+  },
 
-      subject: "CodeHunt Email Verification",
+  {
+    attempts: 3,
 
-      html: `
-        <h2>Verify your CodeHunt account</h2>
+    backoff: {
+      type: "exponential",
+      delay: 5000
+    },
 
-        <p>Your OTP is:</p>
+    removeOnComplete: 100,
 
-        <h1>${otp}</h1>
+    removeOnFail: 50
+  }
+);
 
-        <p>This code expires in 10 minutes.</p>
-      `
-    });
-
-    res.json({
-      message: "OTP sent successfully"
-    });
+return res.json({
+  message: "OTP sent successfully"
+});
 
   } catch {
 
