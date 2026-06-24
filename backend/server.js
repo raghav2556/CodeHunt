@@ -737,6 +737,9 @@ app.post("/run", authMiddleware, runLimiter, async (req, res) => {
           code,
           status: "Compile Error"
         });
+        await redis.del(
+  `submission:${req.user}:${problemKey}`
+);
       } catch (err) {
         console.log("Submission save error:", err);
       }
@@ -837,6 +840,9 @@ executable.stdin.end();
         code,
         status
       });
+      await redis.del(
+  `submission:${req.user}:${problemKey}`
+);
 
     } catch (err) {
 
@@ -1036,14 +1042,61 @@ app.get("/course/:slug", async (req, res) => {
 
 app.get("/submissions/:problemKey", authMiddleware, async (req, res) => {
 
-  const submissions = await Submission.find({
-    userId: req.user,
-    problemKey: req.params.problemKey
-  })
-  .sort({ createdAt: -1 })
-  .limit(20);
+  try {
 
-  res.json(submissions);
+    const { problemKey } = req.params;
+
+    const cacheKey =
+      `submission:${req.user}:${problemKey}`;
+
+    const cachedSubmissions =
+      await redis.get(cacheKey);
+
+    if (cachedSubmissions) {
+
+      console.log(
+        `⚡ Cache HIT: ${cacheKey}`
+      );
+
+      return res.json(
+        JSON.parse(cachedSubmissions)
+      );
+    }
+
+    console.log(
+      `📦 Cache MISS: ${cacheKey}`
+    );
+
+    const submissions =
+      await Submission.find({
+        userId: req.user,
+        problemKey
+      })
+      .sort({ createdAt: -1 })
+      .limit(20);
+
+    await redis.set(
+      cacheKey,
+      JSON.stringify(submissions),
+      "EX",
+      300
+    );
+
+    res.json(submissions);
+
+  } catch (err) {
+
+    console.log(
+      "Submission cache error:",
+      err
+    );
+
+    res.status(500).json({
+      message:
+        "Failed to load submissions"
+    });
+
+  }
 
 });
 
