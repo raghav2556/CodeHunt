@@ -30,6 +30,7 @@ export default function App() {
 
   // ─── AUTH ────────────────────────────────────────────────────────────────────
 const [user, setUser] = useState(null);
+const [authLoading, setAuthLoading] = useState(true);
   const [isLogin, setIsLogin] = useState(true);
   const [authData, setAuthData] = useState({ username: "", email: "", password: "", ConfirmPassword: ""});
    const [authMessage, setAuthMessage] = useState("");
@@ -64,31 +65,41 @@ const [authMessageType, setAuthMessageType] = useState("error");
 
   useEffect(() => {
   const checkAuth = async () => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/me`,
-        {
-          credentials: "include",
-        }
-      );
 
-      if (res.status === 401) {
-  setUser(null);
-  return;
-}
+  try {
 
-      const data = await res.json();
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/me`,
+      {
+        credentials: "include"
+      }
+    );
 
-      setUser(data);
-
-      localStorage.setItem(
-        "username",
-        data.username
-      );
-
-    } catch (err) {
-      console.log(err);
+    if (res.status === 401) {
+      setUser(null);
+      return;
     }
-  };
+
+    const data = await res.json();
+
+    setUser(data);
+
+    localStorage.setItem(
+      "username",
+      data.username
+    );
+
+  } catch (err) {
+
+    console.log(err);
+
+  } finally {
+
+    setAuthLoading(false);
+
+  }
+
+};
 
   checkAuth();
 }, []);
@@ -270,6 +281,16 @@ const logout = async () => {
 
   navigate("/");
 };
+
+if (authLoading) {
+
+  return (
+    <div className="h-screen flex items-center justify-center">
+      Loading...
+    </div>
+  );
+
+}
 
   // ─── NOT LOGGED IN ───────────────────────────────────────────────────────────
  if (!user) {

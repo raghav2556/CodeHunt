@@ -552,6 +552,9 @@ app.post("/save-progress", authMiddleware, async (req, res) => {
     user.level = Math.floor(user.xp / 100) + 1;
 
     await user.save();
+    await redis.del(
+  `progress:${req.user}`
+);
     
 
     res.json({
@@ -579,6 +582,9 @@ app.post("/save-achievements", authMiddleware, async (req, res) => {
     user.achievements = achievements;
 
     await user.save();
+    await redis.del(
+  `progress:${req.user}`
+);
 
     res.json({ success: true });
 
@@ -595,15 +601,65 @@ app.post("/save-achievements", authMiddleware, async (req, res) => {
 
 // ================= LOAD PROGRESS =================
 app.get("/load-progress", authMiddleware, async (req, res) => {
-  const user = await User.findById(req.user);
 
-  res.json({
-  progress: Object.fromEntries(user.progress),
-  xp: user.xp,
-  level: user.level,
-  streak: user.streak,
-  achievements: user.achievements || []
-});
+  try {
+
+    const cacheKey = `progress:${req.user}`;
+
+    const cachedData =
+      await redis.get(cacheKey);
+
+    if (cachedData) {
+
+      console.log(
+        `⚡ Cache HIT: ${cacheKey}`
+      );
+
+      return res.json(
+        JSON.parse(cachedData)
+      );
+    }
+
+    console.log(
+      `📦 Cache MISS: ${cacheKey}`
+    );
+
+    const user =
+      await User.findById(req.user);
+
+    const response = {
+      progress: Object.fromEntries(
+        user.progress
+      ),
+      xp: user.xp,
+      level: user.level,
+      streak: user.streak,
+      achievements:
+        user.achievements || []
+    };
+
+    await redis.set(
+      cacheKey,
+      JSON.stringify(response),
+      "EX",
+      300
+    );
+
+    res.json(response);
+
+  } catch (err) {
+
+    console.log(
+      "Load progress cache error:",
+      err
+    );
+
+    res.status(500).json({
+      message: "Failed to load progress"
+    });
+
+  }
+
 });
 
 
