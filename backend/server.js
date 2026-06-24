@@ -23,16 +23,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("./models/User");
 const Course = require("./models/Course");
-const nodemailer = require("nodemailer");
 const emailQueue = require("./queues/emailQueue");
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
 const Otp = require("./models/Otp");
 const Submission = require("./models/Submission");
 const express = require("express");
@@ -926,19 +917,63 @@ app.get("/load-code", authMiddleware, async (req, res) => {
 });
 
 app.get("/course/:slug", async (req, res) => {
-
   try {
 
-    const course = await Course.findOne({ slug: req.params.slug });
+    const { slug } = req.params;
+
+    const cacheKey = `course:${slug}`;
+
+    // ===== CACHE LOOKUP =====
+    const cachedCourse =
+      await redis.get(cacheKey);
+
+    if (cachedCourse) {
+
+      console.log(
+        `⚡ Cache HIT: ${cacheKey}`
+      );
+
+      return res.json(
+        JSON.parse(cachedCourse)
+      );
+    }
+
+    console.log(
+      `📦 Cache MISS: ${cacheKey}`
+    );
+
+    // ===== DATABASE =====
+
+    const course =
+  await Course.findOne({ slug });
 
     if (!course) {
-      return res.status(404).json({ message: "Course not found" });
+
+      return res.status(404).json({
+        message: "Course not found"
+      });
     }
+    // ===== STORE IN CACHE =====
+    await redis.set(
+      cacheKey,
+      JSON.stringify(course),
+      "EX",
+      3600
+    );
 
     res.json(course);
 
   } catch (err) {
-    res.status(500).json({ message: "Failed to load course" });
+
+    console.log(
+      "Course cache error:",
+      err
+    );
+
+    res.status(500).json({
+      message: "Failed to load course"
+    });
+
   }
 
 });
