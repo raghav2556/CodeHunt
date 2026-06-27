@@ -4,6 +4,7 @@ const { Worker } = require("bullmq");
 
 const bullRedis = require("../config/bullRedis");
 const transporter = require("../config/transporter");
+const emailTemplate = require("../templates/emailTemplate");
 
 const worker = new Worker(
   "emailQueue",
@@ -19,23 +20,37 @@ const worker = new Worker(
           ? "CodeHunt Password Reset"
           : "CodeHunt Email Verification";
 
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
+      const html = emailTemplate({
 
-        to: email,
+  title,
 
-        subject: title,
+  heading:
+    purpose === "reset"
+      ? "Reset Your Password"
+      : "Verify Your Email",
 
-        html: `
-          <h2>${title}</h2>
+  description:
+    purpose === "reset"
+      ? "Use the verification code below to securely reset your CodeHunt account password."
+      : "Welcome to CodeHunt! Use the verification code below to complete your account registration.",
 
-          <p>Your OTP is:</p>
+  otp,
 
-          <h1>${otp}</h1>
+  expiry: "10 minutes"
 
-          <p>This code expires in 10 minutes.</p>
-        `
-      });
+});
+
+await transporter.sendMail({
+
+  from: process.env.EMAIL_USER,
+
+  to: email,
+
+  subject: title,
+
+  html
+
+});
 
     }
 
