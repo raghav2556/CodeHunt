@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 export default function Sidebar({ topics, progress, setCurrentTopicIndex, setCurrentView }) {
 
   const getTopicProgress = (tIndex) => {
-    const total = topics[tIndex].problems.length;
+    const total  = topics[tIndex].problems.length;
     const solved = topics[tIndex].problems.filter((_, pIndex) =>
       progress[`${tIndex}-${pIndex}`]
     ).length;
@@ -17,7 +17,7 @@ export default function Sidebar({ topics, progress, setCurrentTopicIndex, setCur
   };
 
   const totalSolved = Object.keys(progress || {}).length;
-  const totalAll = topics.reduce((s, t) => s + t.problems.length, 0);
+  const totalAll    = topics.reduce((s, t) => s + t.problems.length, 0);
 
   return (
     <aside
@@ -27,17 +27,17 @@ export default function Sidebar({ topics, progress, setCurrentTopicIndex, setCur
         borderRight: "1px solid var(--border)"
       }}
     >
-      {/* Header */}
+      {/* ─── Header ─── */}
       <div className="px-4 pt-5 pb-4 shrink-0">
-        <p className="font-hud text-[0.55rem] tracking-[0.22em] text-[var(--neon)] uppercase mb-2">
+        <p className="font-hud text-[0.52rem] tracking-[0.22em] text-[var(--neon)] uppercase mb-2">
           ◆ LEARNING PATH
         </p>
         <div className="divider-neon" />
 
         {/* Overall progress */}
         <div className="mt-3 flex items-center justify-between mb-1.5">
-          <span className="font-mono text-[0.6rem] text-[var(--text-muted)]">OVERALL</span>
-          <span className="font-hud text-[0.6rem] text-[var(--neon)]">
+          <span className="font-mono text-[0.57rem] text-[var(--text-muted)]">OVERALL</span>
+          <span className="font-hud text-[0.57rem] text-[var(--neon)]">
             {totalSolved}/{totalAll}
           </span>
         </div>
@@ -51,13 +51,13 @@ export default function Sidebar({ topics, progress, setCurrentTopicIndex, setCur
         </div>
       </div>
 
-      {/* Stage list */}
+      {/* ─── Stage list ─── */}
       <div className="flex-1 px-3 pb-5 space-y-2">
         {topics.map((topic, tIndex) => {
           const { solved, total } = getTopicProgress(tIndex);
-          const completed = solved === total && total > 0;
-          const unlocked = isTopicUnlocked(tIndex);
-          const pct = total > 0 ? Math.round((solved / total) * 100) : 0;
+          const completed  = solved === total && total > 0;
+          const unlocked   = isTopicUnlocked(tIndex);
+          const pct        = total > 0 ? Math.round((solved / total) * 100) : 0;
 
           return (
             <motion.button
@@ -73,7 +73,7 @@ export default function Sidebar({ topics, progress, setCurrentTopicIndex, setCur
               whileHover={unlocked ? { x: 3 } : {}}
               whileTap={unlocked ? { scale: 0.98 } : {}}
               className={`relative w-full text-left rounded-xl px-4 py-3.5 transition-all duration-200
-              ${unlocked
+                ${unlocked
                   ? completed
                     ? "card card-active"
                     : "card hover:border-[var(--border-mid)]"
@@ -92,24 +92,29 @@ export default function Sidebar({ topics, progress, setCurrentTopicIndex, setCur
               {/* Stage header */}
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
-                  <span className={`font-hud text-[0.55rem] tracking-[0.15em] ${
-                    completed ? "text-[var(--neon)]" : unlocked ? "text-[var(--text-muted)]" : "text-[var(--text-muted)]"
+                  <span className={`font-hud text-[0.52rem] tracking-[0.15em] ${
+                    completed ? "text-[var(--neon)]" : "text-[var(--text-muted)]"
                   }`}>
                     STAGE {tIndex + 1}
                   </span>
                   {completed && (
-                    <span className="badge badge-neon" style={{ fontSize: "0.5rem" }}>✓ DONE</span>
+                    <span className="badge badge-neon" style={{ fontSize: "0.48rem" }}>✓ DONE</span>
                   )}
                   {!unlocked && (
-                    <span className="badge" style={{
-                      fontSize: "0.5rem",
-                      background: "rgba(255,255,255,0.05)",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      color: "rgba(255,255,255,0.3)"
-                    }}>🔒</span>
+                    <span
+                      className="badge"
+                      style={{
+                        fontSize: "0.48rem",
+                        background: "rgba(255,255,255,0.05)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        color: "rgba(255,255,255,0.3)"
+                      }}
+                    >
+                      ⊘
+                    </span>
                   )}
                 </div>
-                <span className={`font-hud text-[0.6rem] ${completed ? "text-[var(--neon)]" : "text-[var(--text-muted)]"}`}>
+                <span className={`font-hud text-[0.57rem] ${completed ? "text-[var(--neon)]" : "text-[var(--text-muted)]"}`}>
                   {pct}%
                 </span>
               </div>
@@ -131,13 +136,13 @@ export default function Sidebar({ topics, progress, setCurrentTopicIndex, setCur
                 />
               </div>
 
-              {/* Count */}
+              {/* Count row */}
               <div className="mt-1.5 flex justify-between items-center">
-                <span className="font-mono text-[0.55rem] text-[var(--text-muted)]">
+                <span className="font-mono text-[0.52rem] text-[var(--text-muted)]">
                   {solved}/{total} solved
                 </span>
                 {unlocked && !completed && (
-                  <span className="font-mono text-[0.55rem] text-[var(--neon)]">
+                  <span className="font-mono text-[0.52rem] text-[var(--neon)]">
                     {total - solved} left
                   </span>
                 )}

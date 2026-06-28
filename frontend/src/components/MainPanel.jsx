@@ -7,9 +7,9 @@ import { motion, AnimatePresence } from "framer-motion";
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const DIFF = {
-  easy:   { cls: "badge-neon",     label: "EASY" },
-  medium: { cls: "badge-amber",    label: "MED"  },
-  hard:   { cls: "badge-crimson",  label: "HARD" },
+  easy:   { cls: "badge-neon",    label: "EASY" },
+  medium: { cls: "badge-amber",   label: "MED"  },
+  hard:   { cls: "badge-crimson", label: "HARD" },
 };
 const diffBadge = (d) => DIFF[d] || { cls: "badge", label: (d || "").toUpperCase() };
 
@@ -42,16 +42,15 @@ export default function MainPanel({
   progress,
   currentTopicIndex,
 }) {
-  const [isVisible, setIsVisible] = useState(true);
-  const [submissions, setSubmissions] = useState([]);
+  const [isVisible,    setIsVisible]    = useState(true);
+  const [submissions,  setSubmissions]  = useState([]);
 
   const loadSubmissions = async () => {
     const problemKey = `${currentTopicIndex}-${currentProblemIndex}`;
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/submissions/${problemKey}`,
-  {
-    credentials: "include",
-  }
-);
+    const res  = await fetch(
+      `${import.meta.env.VITE_API_URL}/submissions/${problemKey}`,
+      { credentials: "include" }
+    );
     const data = await res.json();
     setSubmissions(data);
   };
@@ -70,7 +69,7 @@ export default function MainPanel({
     return () => window.removeEventListener("submissionUpdated", refresh);
   }, [currentTopicIndex, currentProblemIndex]);
 
-  // ─── Loading ─────────────────────────────────────────────────────────────────
+  // ─── Loading ──────────────────────────────────────────────────────────────
   if (!topic || !problem) {
     return (
       <div className="flex-1 flex items-center justify-center" style={{ background: "var(--void)" }}>
@@ -87,12 +86,12 @@ export default function MainPanel({
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
   // TOPIC HOME VIEW
-  // ─────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
   if (currentView === "topic") {
     const totalProblems = topic.problems.length;
-    const solvedCount = topic.problems.filter((_, i) =>
+    const solvedCount   = topic.problems.filter((_, i) =>
       progress?.[`${currentTopicIndex}-${i}`]
     ).length;
     const pct = totalProblems > 0 ? (solvedCount / totalProblems) * 100 : 0;
@@ -110,7 +109,7 @@ export default function MainPanel({
 
         <div className="relative z-10 max-w-2xl mx-auto px-8 py-12">
 
-          {/* Stage badge + title */}
+          {/* Stage header */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -123,10 +122,12 @@ export default function MainPanel({
             <h1 className="font-title text-4xl text-[var(--text)] leading-tight mb-2">
               {topic.topicName}
             </h1>
-            <p className="text-[var(--text-muted)] text-sm">Select your training mode to proceed.</p>
+            <p className="text-[var(--text-muted)] text-sm">
+              Select a training mode to proceed.
+            </p>
           </motion.div>
 
-          {/* Progress card */}
+          {/* Stage progress */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -134,10 +135,10 @@ export default function MainPanel({
             className="card rounded-xl p-5 mb-7"
           >
             <div className="flex justify-between items-center mb-2.5">
-              <span className="font-hud text-[0.6rem] tracking-widest text-[var(--text-muted)]">
+              <span className="font-hud text-[0.57rem] tracking-widest text-[var(--text-muted)]">
                 STAGE PROGRESS
               </span>
-              <span className="font-hud text-[0.65rem] text-[var(--neon)]">
+              <span className="font-hud text-[0.62rem] text-[var(--neon)]">
                 {solvedCount} / {totalProblems} SOLVED
               </span>
             </div>
@@ -151,7 +152,7 @@ export default function MainPanel({
             </div>
           </motion.div>
 
-          {/* Action cards */}
+          {/* Mode cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
             {/* Notes card */}
@@ -171,21 +172,23 @@ export default function MainPanel({
                   transform: "translate(40%, -40%)",
                 }}
               />
+              {/* Geometric N icon */}
               <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-5"
+                className="w-12 h-12 rounded-xl flex items-center justify-center mb-5 font-hud text-xl font-bold"
                 style={{
                   background: "var(--cyan-10)",
                   border: "1px solid rgba(0,212,255,0.25)",
+                  color: "var(--cyan)"
                 }}
               >
-                📘
+                N
               </div>
               <h2 className="font-title text-xl text-[var(--text)] mb-2">Study Notes</h2>
               <p className="text-[var(--text-muted)] text-sm leading-relaxed mb-5">
                 Learn concepts, syntax, and examples before tackling problems.
               </p>
               <div className="flex items-center gap-1.5" style={{ color: "var(--cyan)" }}>
-                <span className="font-hud text-[0.6rem] tracking-widest">READ NOTES</span>
+                <span className="font-hud text-[0.57rem] tracking-widest">READ NOTES</span>
                 <span className="text-xs">→</span>
               </div>
             </motion.div>
@@ -207,14 +210,16 @@ export default function MainPanel({
                   transform: "translate(40%, -40%)",
                 }}
               />
+              {/* Code bracket icon */}
               <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-5"
+                className="w-12 h-12 rounded-xl flex items-center justify-center mb-5 font-mono text-xl font-bold"
                 style={{
                   background: "var(--neon-10)",
                   border: "1px solid var(--border-mid)",
+                  color: "var(--neon)"
                 }}
               >
-                💻
+                {"</>"}
               </div>
               <h2 className="font-title text-xl text-[var(--text)] mb-2">Practice Problems</h2>
               <p className="text-[var(--text-muted)] text-sm leading-relaxed mb-5">
@@ -222,10 +227,10 @@ export default function MainPanel({
               </p>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5" style={{ color: "var(--neon)" }}>
-                  <span className="font-hud text-[0.6rem] tracking-widest">LAUNCH</span>
+                  <span className="font-hud text-[0.57rem] tracking-widest">LAUNCH</span>
                   <span className="text-xs">→</span>
                 </div>
-                <span className="font-hud text-[0.6rem] text-[var(--neon)]">
+                <span className="font-hud text-[0.57rem] text-[var(--neon)]">
                   {solvedCount}/{totalProblems}
                 </span>
               </div>
@@ -237,9 +242,9 @@ export default function MainPanel({
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
   // NOTES VIEW
-  // ─────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
   if (currentView === "notes") {
     return (
       <motion.div
@@ -254,8 +259,7 @@ export default function MainPanel({
 
           <button
             onClick={() => setCurrentView("topic")}
-            className="btn-ghost px-4 py-2 rounded-lg font-hud text-xs mb-8
-            inline-flex items-center gap-2"
+            className="btn-ghost px-4 py-2 rounded-lg font-hud text-xs mb-8 inline-flex items-center gap-2"
           >
             ← BACK
           </button>
@@ -275,14 +279,10 @@ export default function MainPanel({
               remarkPlugins={[remarkGfm]}
               components={{
                 code({ node, inline, className, children, ...props }) {
-                  if (inline) {
-                    return <code {...props}>{children}</code>;
-                  }
+                  if (inline) return <code {...props}>{children}</code>;
                   return (
                     <pre>
-                      <code className={className} {...props}>
-                        {children}
-                      </code>
+                      <code className={className} {...props}>{children}</code>
                     </pre>
                   );
                 },
@@ -307,12 +307,12 @@ export default function MainPanel({
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
   // PROBLEM LIST VIEW
-  // ─────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
   if (currentView === "list") {
     const totalProblems = topic.problems.length;
-    const solvedCount = topic.problems.filter((_, i) =>
+    const solvedCount   = topic.problems.filter((_, i) =>
       progress?.[`${currentTopicIndex}-${i}`]
     ).length;
 
@@ -329,13 +329,11 @@ export default function MainPanel({
 
           <button
             onClick={() => setCurrentView("topic")}
-            className="btn-ghost px-4 py-2 rounded-lg font-hud text-xs mb-8
-            inline-flex items-center gap-2"
+            className="btn-ghost px-4 py-2 rounded-lg font-hud text-xs mb-8 inline-flex items-center gap-2"
           >
             ← BACK
           </button>
 
-          {/* Header */}
           <div className="mb-6">
             <span className="badge badge-neon mb-3 inline-block">
               STAGE {currentTopicIndex + 1}
@@ -343,19 +341,18 @@ export default function MainPanel({
             <h1 className="font-title text-3xl text-[var(--text)] mb-1">
               {topic.topicName}
             </h1>
-            <p className="font-hud text-[0.6rem] text-[var(--text-muted)]">
+            <p className="font-hud text-[0.57rem] text-[var(--text-muted)]">
               {solvedCount} / {totalProblems} MISSIONS COMPLETED
             </p>
           </div>
 
-          {/* Problems list */}
           <div className="space-y-2">
             {topic.problems.map((prob, index) => {
-              const key = `${currentTopicIndex}-${index}`;
-              const prevKey = `${currentTopicIndex}-${index - 1}`;
+              const key       = `${currentTopicIndex}-${index}`;
+              const prevKey   = `${currentTopicIndex}-${index - 1}`;
               const isUnlocked = index === 0 || progress?.[prevKey];
-              const solved = progress?.[key];
-              const diff = diffBadge(prob.difficulty);
+              const solved    = progress?.[key];
+              const diff      = diffBadge(prob.difficulty);
 
               return (
                 <motion.button
@@ -373,17 +370,15 @@ export default function MainPanel({
                   whileHover={isUnlocked ? { x: 4, transition: { duration: 0.15 } } : {}}
                   whileTap={isUnlocked ? { scale: 0.99 } : {}}
                   className={`relative w-full text-left rounded-xl px-5 py-4 transition-all duration-200
-                  ${isUnlocked
-                    ? "card hover:border-[var(--border-mid)]"
-                    : "opacity-25 cursor-not-allowed"
-                  }`}
-                  style={
-                    solved
-                      ? { borderColor: "var(--neon-40)", boxShadow: "0 0 0 1px var(--neon-20)" }
-                      : {}
-                  }
+                    ${isUnlocked
+                      ? "card hover:border-[var(--border-mid)]"
+                      : "opacity-25 cursor-not-allowed"
+                    }`}
+                  style={solved ? {
+                    borderColor: "var(--neon-40)",
+                    boxShadow: "0 0 0 1px var(--neon-20)"
+                  } : {}}
                 >
-                  {/* solved accent bar */}
                   {solved && (
                     <div
                       className="absolute inset-y-0 left-0 w-0.5 rounded-l-xl"
@@ -392,7 +387,6 @@ export default function MainPanel({
                   )}
 
                   <div className="flex items-center justify-between gap-3">
-                    {/* Left side */}
                     <div className="flex items-center gap-3 min-w-0">
                       <span
                         className="w-7 h-7 rounded-lg flex items-center justify-center font-hud text-xs shrink-0"
@@ -409,13 +403,24 @@ export default function MainPanel({
                       </span>
                     </div>
 
-                    {/* Right side */}
                     <div className="flex items-center gap-2 shrink-0">
                       <span className={`badge ${diff.cls}`}>{diff.label}</span>
                       {prob.xp && (
                         <span className="badge badge-amber">{prob.xp} XP</span>
                       )}
-                      {!isUnlocked && <span className="text-xs">🔒</span>}
+                      {!isUnlocked && (
+                        <span
+                          className="badge"
+                          style={{
+                            fontSize: "0.5rem",
+                            background: "rgba(255,255,255,0.05)",
+                            border: "1px solid rgba(255,255,255,0.12)",
+                            color: "rgba(255,255,255,0.3)"
+                          }}
+                        >
+                          ⊘
+                        </span>
+                      )}
                     </div>
                   </div>
                 </motion.button>
@@ -427,9 +432,9 @@ export default function MainPanel({
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
   // PROBLEM / EDITOR VIEW
-  // ─────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
   const diff = diffBadge(problem.difficulty);
   const isCompileError =
     result?.length === 1 &&
@@ -445,7 +450,7 @@ export default function MainPanel({
       className="flex flex-1 overflow-hidden"
     >
       {/* ══════════════════════════════════════════════════════════
-          LEFT PANEL — Problem description + results
+          LEFT — Problem description + results
       ══════════════════════════════════════════════════════════ */}
       <div
         className="w-1/2 flex flex-col overflow-y-auto"
@@ -458,12 +463,11 @@ export default function MainPanel({
             <motion.button
               whileHover={{ x: -2 }}
               onClick={() => setCurrentView("list")}
-              className="btn-ghost px-3 py-1.5 rounded-lg font-hud text-xs
-              inline-flex items-center gap-1.5"
+              className="btn-ghost px-3 py-1.5 rounded-lg font-hud text-xs inline-flex items-center gap-1.5"
             >
               ← MISSIONS
             </motion.button>
-            <span className="font-mono text-[0.6rem] text-[var(--text-muted)]">
+            <span className="font-mono text-[0.57rem] text-[var(--text-muted)]">
               {currentProblemIndex + 1} / {topic.problems.length}
             </span>
           </div>
@@ -553,7 +557,6 @@ export default function MainPanel({
                           border: `1px solid ${test.passed ? "var(--neon-20)" : "rgba(255,59,78,0.22)"}`,
                         }}
                       >
-                        {/* Header */}
                         <div
                           className="flex items-center justify-between px-4 py-2"
                           style={{
@@ -562,7 +565,7 @@ export default function MainPanel({
                               : "rgba(255,59,78,0.05)",
                           }}
                         >
-                          <span className="font-hud text-[0.58rem] tracking-widest text-[var(--text-muted)]">
+                          <span className="font-hud text-[0.55rem] tracking-widest text-[var(--text-muted)]">
                             TEST CASE {i + 1}
                           </span>
                           <span
@@ -577,19 +580,18 @@ export default function MainPanel({
                           </span>
                         </div>
 
-                        {/* Body */}
                         <div
                           className="px-4 py-3 space-y-2"
                           style={{ background: "rgba(0,0,0,0.25)" }}
                         >
                           {[
-                            { label: "INPUT",    val: test.input || "—",      color: "var(--text-muted)" },
-                            { label: "EXPECTED", val: test.expected,           color: "var(--neon)"       },
-                            { label: "GOT",      val: test.output || "—",      color: test.passed ? "var(--neon)" : "var(--crimson)" },
+                            { label: "INPUT",    val: test.input || "—",    color: "var(--text-muted)" },
+                            { label: "EXPECTED", val: test.expected,         color: "var(--neon)"       },
+                            { label: "GOT",      val: test.output || "—",    color: test.passed ? "var(--neon)" : "var(--crimson)" },
                           ].map(row => (
                             <div key={row.label} className="flex items-start gap-3">
                               <span
-                                className="font-hud text-[0.52rem] tracking-widest w-16 pt-0.5 shrink-0"
+                                className="font-hud text-[0.5rem] tracking-widest w-16 pt-0.5 shrink-0"
                                 style={{ color: "var(--text-muted)" }}
                               >
                                 {row.label}
@@ -614,7 +616,7 @@ export default function MainPanel({
           {/* ── Submission history ── */}
           {submissions.length > 0 && (
             <div className="card rounded-xl p-4">
-              <p className="font-hud text-[0.55rem] tracking-[0.2em] text-[var(--neon)] mb-3">
+              <p className="font-hud text-[0.52rem] tracking-[0.2em] text-[var(--neon)] mb-3">
                 ◆ SUBMISSION LOG
               </p>
               <div className="space-y-1.5">
@@ -630,13 +632,13 @@ export default function MainPanel({
                         style={{ background: SUB_COLOR[s.status] || "var(--text-muted)" }}
                       />
                       <span
-                        className="font-hud text-[0.6rem]"
+                        className="font-hud text-[0.57rem]"
                         style={{ color: SUB_COLOR[s.status] || "var(--text-muted)" }}
                       >
                         {s.status}
                       </span>
                     </div>
-                    <span className="font-mono text-[0.55rem] text-[var(--text-muted)]">
+                    <span className="font-mono text-[0.52rem] text-[var(--text-muted)]">
                       {new Date(s.createdAt).toLocaleTimeString()}
                     </span>
                   </div>
@@ -658,7 +660,7 @@ export default function MainPanel({
                 color: "var(--purple)",
               }}
             >
-              {!result ? "💡 REQUEST STARTING HINT" : "💡 REQUEST DEBUG HINT"}
+              {!result ? "◈ STARTING HINT" : "◈ DEBUG HINT"}
             </motion.button>
           )}
 
@@ -724,7 +726,17 @@ export default function MainPanel({
                 boxShadow: "0 0 40px var(--neon-10)",
               }}
             >
-              <div className="text-4xl mb-3">🎓</div>
+              {/* Geometric star instead of emoji */}
+              <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 font-hud text-3xl"
+                style={{
+                  background: "var(--neon-20)",
+                  border: "1px solid var(--neon-40)",
+                  color: "var(--neon)"
+                }}
+              >
+                ★
+              </div>
               <h2
                 className="font-hud text-sm tracking-[0.2em] mb-2"
                 style={{ color: "var(--neon)" }}
@@ -741,13 +753,13 @@ export default function MainPanel({
       </div>
 
       {/* ══════════════════════════════════════════════════════════
-          RIGHT PANEL — Code editor
+          RIGHT — Code editor
       ══════════════════════════════════════════════════════════ */}
       <div
         className="w-1/2 flex flex-col p-5"
         style={{ background: "var(--card)" }}
       >
-        {/* Editor chrome bar */}
+        {/* Editor chrome */}
         <div
           className="flex items-center justify-between px-4 py-2 rounded-t-xl"
           style={{
@@ -757,18 +769,17 @@ export default function MainPanel({
           }}
         >
           <div className="flex items-center gap-3">
-            {/* Traffic lights */}
             <div className="flex gap-1.5">
               <div className="w-2.5 h-2.5 rounded-full opacity-60" style={{ background: "var(--crimson)" }} />
               <div className="w-2.5 h-2.5 rounded-full opacity-60" style={{ background: "var(--amber)" }} />
               <div className="w-2.5 h-2.5 rounded-full opacity-60" style={{ background: "var(--neon)" }} />
             </div>
-            <span className="font-mono text-[0.6rem] text-[var(--text-muted)]">solution.cpp</span>
+            <span className="font-mono text-[0.57rem] text-[var(--text-muted)]">solution.cpp</span>
           </div>
-          <span className="badge badge-cyan" style={{ fontSize: "0.5rem" }}>C++17</span>
+          <span className="badge badge-cyan" style={{ fontSize: "0.48rem" }}>C++17</span>
         </div>
 
-        {/* Monaco editor */}
+        {/* Monaco */}
         <div
           className="flex-1 editor-wrap"
           style={{ borderRadius: "0 0 12px 12px", borderTop: "none", minHeight: 0 }}
@@ -827,7 +838,7 @@ export default function MainPanel({
                   exit={{ opacity: 0 }}
                   transition={{ duration: 1.1, ease: "easeOut" }}
                   className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1
-                  pointer-events-none font-hud text-base whitespace-nowrap"
+                    pointer-events-none font-hud text-base whitespace-nowrap"
                   style={{
                     color: "var(--neon)",
                     textShadow: "0 0 14px var(--neon-glow)",
@@ -839,14 +850,14 @@ export default function MainPanel({
             </AnimatePresence>
           </div>
 
-          {/* Status indicator */}
+          {/* Status */}
           <AnimatePresence>
             {loading && (
               <motion.span
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="font-hud text-[0.6rem] tracking-widest animate-pulse"
+                className="font-hud text-[0.57rem] tracking-widest animate-pulse"
                 style={{ color: "var(--amber)" }}
               >
                 ◆ JUDGING...
