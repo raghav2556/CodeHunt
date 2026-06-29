@@ -16,100 +16,76 @@ const pageVariants = {
   exit:    { opacity: 0, y: -20 },
 };
 
+/* Geometric unicode chars — no emojis */
 const ACHIEVEMENT_LABELS = {
-  first:   { title: "First Blood",       icon: "🩸" },
-  level3:  { title: "Apprentice Hunter", icon: "🏹" },
-  streak3: { title: "Streak Starter",    icon: "🔥" },
-  stage1:  { title: "Stage Conqueror",   icon: "👑" },
+  first:   { title: "First Blood",       icon: "◆" },
+  level3:  { title: "Apprentice Hunter", icon: "◈" },
+  streak3: { title: "Streak Starter",    icon: "▲" },
+  stage1:  { title: "Stage Conqueror",   icon: "★" },
 };
 
 export default function App() {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate  = useNavigate();
+  const location  = useLocation();
   const isDashboard = location.pathname === "/dashboard";
 
   // ─── AUTH ────────────────────────────────────────────────────────────────────
-const [user, setUser] = useState(null);
-const [authLoading, setAuthLoading] = useState(true);
-  const [isLogin, setIsLogin] = useState(true);
-  const [authData, setAuthData] = useState({ username: "", email: "", password: "", ConfirmPassword: ""});
-   const [authMessage, setAuthMessage] = useState("");
-const [authMessageType, setAuthMessageType] = useState("error");
+  const [user,        setUser]        = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [isLogin,     setIsLogin]     = useState(true);
+  const [authData,    setAuthData]    = useState({ username: "", email: "", password: "", ConfirmPassword: "" });
+  const [authMessage,     setAuthMessage]     = useState("");
+  const [authMessageType, setAuthMessageType] = useState("error");
 
   // ─── MAIN STATE ──────────────────────────────────────────────────────────────
-  const [codeMap, setCodeMap] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [hint, setHint] = useState("");
-  const [xp, setXp] = useState(0);
-  const [xpGain, setXpGain] = useState(0);
-  const prevXpRef = useRef(0);
-  const saveTimeout = useRef(null);
-  const [level, setLevel] = useState(1);
-  const prevLevelRef = useRef(level);
-  const [levelUp, setLevelUp] = useState(false);
-  const [progress, setProgress] = useState({});
+  const [codeMap,            setCodeMap]            = useState({});
+  const [loading,            setLoading]            = useState(false);
+  const [result,             setResult]             = useState(null);
+  const [hint,               setHint]               = useState("");
+  const [xp,                 setXp]                 = useState(0);
+  const [xpGain,             setXpGain]             = useState(0);
+  const prevXpRef            = useRef(0);
+  const saveTimeout          = useRef(null);
+  const [level,              setLevel]              = useState(1);
+  const prevLevelRef         = useRef(level);
+  const [levelUp,            setLevelUp]            = useState(false);
+  const [progress,           setProgress]           = useState({});
   const [showSuccessActions, setShowSuccessActions] = useState(false);
-  const [streak, setStreak] = useState(0);
-  const username = localStorage.getItem("username");
-  const [otpVerified, setOtpVerified] = useState(false);
- 
+  const [streak,             setStreak]             = useState(0);
+  const username             = localStorage.getItem("username");
+  const [otpVerified,        setOtpVerified]        = useState(false);
 
-  const [currentTopicIndex, setCurrentTopicIndex] = useState(0);
+  const [currentTopicIndex,   setCurrentTopicIndex]   = useState(0);
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
-  const [currentView, setCurrentView] = useState("topic");
-  const [stageCompleted, setStageCompleted] = useState(false);
-  const [achievements, setAchievements] = useState([]);
-  const [newAchievement, setNewAchievement] = useState(null);
-  const [course, setCourse] = useState(null);
+  const [currentView,         setCurrentView]         = useState("topic");
+  const [stageCompleted,      setStageCompleted]      = useState(false);
+  const [achievements,        setAchievements]        = useState([]);
+  const [newAchievement,      setNewAchievement]      = useState(null);
+  const [course,              setCourse]              = useState(null);
 
   useEffect(() => {
-  const checkAuth = async () => {
-
-  try {
-
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/me`,
-      {
-        credentials: "include"
+    const checkAuth = async () => {
+      try {
+        const res  = await fetch(`${import.meta.env.VITE_API_URL}/me`, { credentials: "include" });
+        if (res.status === 401) { setUser(null); return; }
+        const data = await res.json();
+        setUser(data);
+        localStorage.setItem("username", data.username);
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setAuthLoading(false);
       }
-    );
+    };
+    checkAuth();
+  }, []);
 
-    if (res.status === 401) {
-      setUser(null);
-      return;
-    }
-
-    const data = await res.json();
-
-    setUser(data);
-
-    localStorage.setItem(
-      "username",
-      data.username
-    );
-
-  } catch (err) {
-
-    console.log(err);
-
-  } finally {
-
-    setAuthLoading(false);
-
-  }
-
-};
-
-  checkAuth();
-}, []);
-
-  const topics = course || [];
-const topic = topics?.[currentTopicIndex] || null;
-const problem = topic?.problems?.[currentProblemIndex] || null;
-const currentStage = currentTopicIndex;
-const currentStageName = topic?.topicName || "";
-const key = `${currentTopicIndex}-${currentProblemIndex}`;
+  const topics         = course || [];
+  const topic          = topics?.[currentTopicIndex] || null;
+  const problem        = topic?.problems?.[currentProblemIndex] || null;
+  const currentStage   = currentTopicIndex;
+  const currentStageName = topic?.topicName || "";
+  const key            = `${currentTopicIndex}-${currentProblemIndex}`;
 
   // ─── LOAD PROGRESS ───────────────────────────────────────────────────────────
   useEffect(() => {
@@ -117,9 +93,7 @@ const key = `${currentTopicIndex}-${currentProblemIndex}`;
 
     const loadProgress = async () => {
       try {
-        const progressRes = await fetch(`${import.meta.env.VITE_API_URL}/load-progress`, {
-         credentials: "include",
-        });
+        const progressRes  = await fetch(`${import.meta.env.VITE_API_URL}/load-progress`, { credentials: "include" });
         const progressData = await progressRes.json();
         setProgress(progressData.progress || {});
         setXp(progressData.xp ?? 0);
@@ -127,9 +101,7 @@ const key = `${currentTopicIndex}-${currentProblemIndex}`;
         setStreak(progressData.streak ?? 0);
         setAchievements(progressData.achievements || []);
 
-        const codeRes = await fetch(`${import.meta.env.VITE_API_URL}/load-code`, {
-          credentials: "include",
-        });
+        const codeRes  = await fetch(`${import.meta.env.VITE_API_URL}/load-code`, { credentials: "include" });
         const codeData = await codeRes.json();
         setCodeMap(codeData.codeMap || {});
       } catch {
@@ -172,7 +144,7 @@ const key = `${currentTopicIndex}-${currentProblemIndex}`;
 
   useEffect(() => {
     const loadCourse = async () => {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/course/cpp`);
+      const res  = await fetch(`${import.meta.env.VITE_API_URL}/course/cpp`);
       const data = await res.json();
       setCourse(data.topics);
     };
@@ -181,151 +153,101 @@ const key = `${currentTopicIndex}-${currentProblemIndex}`;
 
   // ─── AUTH HANDLER ────────────────────────────────────────────────────────────
   const handleAuth = async () => {
-    const payload = {
-  ...authData,
-  username: authData.username.trim(),
-  email: authData.email.trim().toLowerCase(),
-  password: authData.password
-};
+    const payload  = {
+      ...authData,
+      username: authData.username.trim(),
+      email:    authData.email.trim().toLowerCase(),
+      password: authData.password
+    };
+    const endpoint = isLogin ? "login" : "signup";
 
-  const endpoint =
-    isLogin ? "login" : "signup";
-
-  try {
-
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/${endpoint}`,
-      {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/${endpoint}`, {
         method: "POST",
         credentials: "include",
-        headers: {
-          "Content-Type": "application/json"
-        },
-
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+
+      if (response.ok && isLogin && data.username) {
+        localStorage.setItem("username", data.username);
+        setUser(data);
+        navigate("/dashboard");
+        return;
       }
-    );
-
-    const data = await response.json();
-
-    if (response.ok && isLogin && data.username) {
-
-      localStorage.setItem(
-        "username",
-        data.username
-      );
-
-      setUser(data);
-
-      navigate("/dashboard");
-
-      return;
+      if (response.ok && !isLogin) {
+        setAuthMessageType("success");
+        setAuthMessage("Account created successfully. Please login.");
+        setIsLogin(true);
+        return;
+      }
+      setAuthMessageType("error");
+      setAuthMessage(data.message || "Something went wrong");
+    } catch {
+      setAuthMessageType("error");
+      setAuthMessage("Server not reachable");
     }
+  };
 
-    if (response.ok && !isLogin) {
+  const logout = async () => {
+    await fetch(`${import.meta.env.VITE_API_URL}/logout`, { method: "POST", credentials: "include" });
+    localStorage.removeItem("username");
+    setUser(null);
+    setAuthData({ username: "", email: "", password: "", ConfirmPassword: "" });
+    setAuthMessage("");
+    setIsLogin(true);
+    setCurrentTopicIndex(0);
+    setCurrentProblemIndex(0);
+    setCurrentView("topic");
+    navigate("/");
+  };
 
-      setAuthMessageType("success");
-
-      setAuthMessage(
-        "Account created successfully. Please login."
-      );
-
-      setIsLogin(true);
-
-      return;
-    }
-
-    setAuthMessageType("error");
-
-    setAuthMessage(
-      data.message || "Something went wrong"
-    );
-
-  } catch {
-
-    setAuthMessageType("error");
-
-    setAuthMessage(
-      "Server not reachable"
-    );
-
-  }
-};
-
-const logout = async () => {
-
-  await fetch(`${import.meta.env.VITE_API_URL}/logout`,
-    {
-      method: "POST",
-      credentials: "include"
-    }
-  );
-
-  localStorage.removeItem("username");
-
-  setUser(null);
-
-  setAuthData({
-    username: "",
-    email: "",
-    password: "",
-    ConfirmPassword: ""
-  });
-
-  setAuthMessage("");
-
-  setIsLogin(true);
-
-  setCurrentTopicIndex(0);
-  setCurrentProblemIndex(0);
-  setCurrentView("topic");
-
-  navigate("/");
-};
-
-if (authLoading) {
-
-  return (
-    <div className="h-screen flex items-center justify-center">
-      Loading...
-    </div>
-  );
-
-}
-
-  // ─── NOT LOGGED IN ───────────────────────────────────────────────────────────
- if (!user) {
-  return (
-    <Routes>
-      <Route
-        path="/"
-        element={
-          <AuthScreen
-            isLogin={isLogin}
-            setIsLogin={setIsLogin}
-            authData={authData}
-            setAuthData={setAuthData}
-            handleAuth={handleAuth}
-            authMessage={authMessage}
-            authMessageType={authMessageType}
-            setAuthMessage={setAuthMessage}
-            setAuthMessageType={setAuthMessageType}
-            otpVerified={otpVerified}
-            setOtpVerified={setOtpVerified}
+  if (authLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-[var(--void)]">
+        <div className="text-center">
+          <div
+            className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin mx-auto mb-3"
+            style={{ borderColor: "var(--neon)", borderTopColor: "transparent" }}
           />
-        }
-      />
+          <p className="font-hud text-[0.57rem] tracking-widest text-[var(--text-muted)]">
+            INITIALISING...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-      <Route
-        path="/forgot-password"
-        element={<ForgotPassword />}
-      />
+  // ─── NOT LOGGED IN ────────────────────────────────────────────────────────────
+  if (!user) {
+    return (
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <AuthScreen
+              isLogin={isLogin}
+              setIsLogin={setIsLogin}
+              authData={authData}
+              setAuthData={setAuthData}
+              handleAuth={handleAuth}
+              authMessage={authMessage}
+              authMessageType={authMessageType}
+              setAuthMessage={setAuthMessage}
+              setAuthMessageType={setAuthMessageType}
+              otpVerified={otpVerified}
+              setOtpVerified={setOtpVerified}
+            />
+          }
+        />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    );
+  }
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  );
-}
-
-  // ─── LOADING SCREEN (course not yet fetched) ─────────────────────────────────
+  // ─── LOADING (course not yet fetched) ─────────────────────────────────────────
   if (user && !course) {
     return (
       <div
@@ -340,20 +262,14 @@ if (authLoading) {
           transition={{ duration: 0.5 }}
           className="relative z-10 flex flex-col items-center gap-6"
         >
-          {/* Pulsing ring */}
           <div className="relative w-16 h-16">
             <div
               className="absolute inset-0 rounded-full animate-pulse-ring"
-              style={{
-                border: "2px solid var(--neon-40)",
-              }}
+              style={{ border: "2px solid var(--neon-40)" }}
             />
             <div
               className="absolute inset-2 rounded-full"
-              style={{
-                border: "2px solid var(--neon)",
-                boxShadow: "0 0 16px var(--neon-glow)",
-              }}
+              style={{ border: "2px solid var(--neon)", boxShadow: "0 0 16px var(--neon-glow)" }}
             />
             <div
               className="absolute inset-0 flex items-center justify-center font-hud text-lg"
@@ -364,13 +280,10 @@ if (authLoading) {
           </div>
 
           <div className="text-center">
-            <p
-              className="font-hud text-[0.65rem] tracking-[0.28em] mb-1"
-              style={{ color: "var(--neon)" }}
-            >
+            <p className="font-hud text-[0.62rem] tracking-[0.28em] mb-1" style={{ color: "var(--neon)" }}>
               CODEHUNT
             </p>
-            <p className="font-mono text-[0.6rem] text-[var(--text-muted)] tracking-widest">
+            <p className="font-mono text-[0.57rem] text-[var(--text-muted)] tracking-widest">
               LOADING MISSION DATA
               <motion.span
                 animate={{ opacity: [1, 0, 1] }}
@@ -392,8 +305,7 @@ if (authLoading) {
                 className="rounded-xl h-10"
                 style={{
                   width: `${w}%`,
-                  background:
-                    "linear-gradient(90deg, var(--card) 25%, var(--elevated) 50%, var(--card) 75%)",
+                  background: "linear-gradient(90deg, var(--card) 25%, var(--elevated) 50%, var(--card) 75%)",
                   backgroundSize: "200% 100%",
                   animation: `shimmer 1.6s infinite ${i * 0.2}s`,
                   border: "1px solid var(--border)",
@@ -405,7 +317,6 @@ if (authLoading) {
       </div>
     );
   }
-
 
   const defaultTemplate = `#include <bits/stdc++.h>
 using namespace std;
@@ -420,40 +331,33 @@ int main() {
 
   const code = codeMap[key] || defaultTemplate;
 
-  // ─── ACHIEVEMENT CHECK ───────────────────────────────────────────────────────
+  // ─── ACHIEVEMENT CHECK ────────────────────────────────────────────────────────
   async function checkAchievements(updatedProgress = progress) {
     const unlocked = [];
 
-    if (Object.keys(updatedProgress).length >= 1 && !achievements.includes("first")) {
+    if (Object.keys(updatedProgress).length >= 1 && !achievements.includes("first"))
       unlocked.push("first");
-    }
-    if (level >= 3 && !achievements.includes("level3")) {
+    if (level >= 3 && !achievements.includes("level3"))
       unlocked.push("level3");
-    }
-    if (streak >= 3 && !achievements.includes("streak3")) {
+    if (streak >= 3 && !achievements.includes("streak3"))
       unlocked.push("streak3");
-    }
 
     const totalProblems = topic?.problems?.length || 0;
-    const solvedCount =
-      topic?.problems?.filter((_, i) => updatedProgress[`${currentTopicIndex}-${i}`]).length || 0;
+    const solvedCount   = topic?.problems?.filter(
+      (_, i) => updatedProgress[`${currentTopicIndex}-${i}`]
+    ).length || 0;
 
-    if (totalProblems > 0 && solvedCount === totalProblems && !achievements.includes("stage1")) {
+    if (totalProblems > 0 && solvedCount === totalProblems && !achievements.includes("stage1"))
       unlocked.push("stage1");
-    }
 
     if (unlocked.length > 0) {
       const updated = [...achievements, ...unlocked];
-
       await fetch(`${import.meta.env.VITE_API_URL}/save-achievements`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ achievements: updated }),
       });
-
       setAchievements(updated);
       setNewAchievement(unlocked[0]);
       setTimeout(() => setNewAchievement(null), 3000);
@@ -471,9 +375,7 @@ int main() {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/run`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
           code,
@@ -481,7 +383,6 @@ int main() {
           problemKey: `${currentTopicIndex}-${currentProblemIndex}`,
         }),
       });
-
       const data = await response.json();
 
       if (data.error) {
@@ -495,7 +396,7 @@ int main() {
         window.dispatchEvent(new Event("submissionUpdated"));
 
         const allPassed = data.results.every(r => r.passed);
-        const key = `${currentTopicIndex}-${currentProblemIndex}`;
+        const key       = `${currentTopicIndex}-${currentProblemIndex}`;
 
         if (allPassed) {
           setShowSuccessActions(true);
@@ -503,13 +404,10 @@ int main() {
           if (!progress[key]) {
             const saveResponse = await fetch(`${import.meta.env.VITE_API_URL}/save-progress`, {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
+              headers: { "Content-Type": "application/json" },
               credentials: "include",
               body: JSON.stringify({ problemKey: key, xpEarned: problem.xp }),
             });
-
             if (saveResponse.ok) {
               const saveData = await saveResponse.json();
               setProgress(saveData.progress || {});
@@ -520,13 +418,10 @@ int main() {
             }
 
             const totalProblems = topic.problems.length;
-            const solvedCount = topic.problems.filter((_, i) =>
-              progress[`${currentTopicIndex}-${i}`] || i === currentProblemIndex
+            const solvedCount   = topic.problems.filter(
+              (_, i) => progress[`${currentTopicIndex}-${i}`] || i === currentProblemIndex
             ).length;
-
-            if (solvedCount === totalProblems) {
-              setStageCompleted(true);
-            }
+            if (solvedCount === totalProblems) setStageCompleted(true);
           }
         }
       }
@@ -540,14 +435,12 @@ int main() {
   // ─── GET HINT ────────────────────────────────────────────────────────────────
   const getHint = async () => {
     const failedTest = result?.find(t => !t.passed);
-    const mode = failedTest ? "debug" : "start";
+    const mode       = failedTest ? "debug" : "start";
 
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/hint`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ code, problem, failedTest, mode }),
       });
@@ -558,7 +451,7 @@ int main() {
     }
   };
 
-  // ─── RENDER ───────────────────────────────────────────────────────────────────
+  // ─── RENDER ──────────────────────────────────────────────────────────────────
   return (
     <div
       className="h-screen flex flex-col overflow-hidden"
@@ -629,21 +522,14 @@ int main() {
                     code={code}
                     setCode={(value) => {
                       setCodeMap(prev => ({ ...prev, [key]: value }));
-
                       if (saveTimeout.current) clearTimeout(saveTimeout.current);
-
                       saveTimeout.current = setTimeout(() => {
                         fetch(`${import.meta.env.VITE_API_URL}/save-code`, {
-                                method: "POST",
-                                credentials: "include",
-                                headers: {
-                                   "Content-Type": "application/json",
-                                },
-                               body: JSON.stringify({
-                               problemKey: key,
-                               code: value,
-                               }),
-                           });
+                          method: "POST",
+                          credentials: "include",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ problemKey: key, code: value }),
+                        });
                       }, 2000);
                     }}
                     runCode={runCode}
@@ -714,14 +600,19 @@ int main() {
                 style={{ background: "linear-gradient(90deg, var(--neon), transparent)" }}
               />
               <div className="flex items-center gap-3">
+                {/* Geometric icon — no emoji */}
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
-                  style={{ background: "var(--neon-10)", border: "1px solid var(--border-mid)" }}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center font-hud text-xl shrink-0"
+                  style={{
+                    background: "var(--neon-10)",
+                    border: "1px solid var(--border-mid)",
+                    color: "var(--neon)"
+                  }}
                 >
-                  {ach?.icon || "🏆"}
+                  {ach?.icon || "◆"}
                 </div>
                 <div>
-                  <p className="font-hud text-[0.55rem] tracking-[0.2em] text-[var(--neon)] mb-0.5">
+                  <p className="font-hud text-[0.52rem] tracking-[0.2em] text-[var(--neon)] mb-0.5">
                     ACHIEVEMENT UNLOCKED
                   </p>
                   <p className="font-title text-sm text-[var(--text)]">
@@ -742,11 +633,10 @@ int main() {
           background: "rgba(4,11,20,0.95)",
         }}
       >
-        <p className="font-hud text-[0.5rem] tracking-[0.22em] text-[var(--text-muted)]">
+        <p className="font-hud text-[0.48rem] tracking-[0.22em] text-[var(--text-muted)]">
           © 2026 CODEHUNT — HUNT KNOWLEDGE · LEVEL UP · MASTER C++
         </p>
       </footer>
     </div>
   );
 }
-

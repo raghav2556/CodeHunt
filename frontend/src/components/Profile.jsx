@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
-/* ─── Rank ladder (mirror Navbar) ───────────────── */
+/* ─── Rank ladder (mirrors Navbar exactly) ───────────── */
 const RANKS = [
   { minLevel: 1,  name: "RECRUIT",  icon: "⬡", color: "var(--text-muted)" },
   { minLevel: 3,  name: "HUNTER",   icon: "◈", color: "var(--neon)"       },
@@ -12,7 +12,7 @@ const RANKS = [
 const getRank = (lvl) =>
   [...RANKS].reverse().find((r) => lvl >= r.minLevel) || RANKS[0];
 
-/* ─── Stat readout card ─────────────────────────── */
+/* ─── Stat card ──────────────────────────────────────── */
 function StatCard({ label, value, icon, color, delay, sub }) {
   return (
     <motion.div
@@ -21,19 +21,24 @@ function StatCard({ label, value, icon, color, delay, sub }) {
       transition={{ delay, duration: 0.5 }}
       className="card rounded-xl p-5 relative overflow-hidden card-hover"
     >
-      {/* ambient glow */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: `radial-gradient(ellipse at 100% 0%, ${color}18 0%, transparent 65%)`,
+          background: `radial-gradient(ellipse at 100% 0%, ${color}15 0%, transparent 65%)`,
         }}
       />
 
       <div className="flex items-start justify-between mb-3 relative z-10">
-        <span className="font-hud text-[0.55rem] tracking-[0.2em] text-[var(--text-muted)] uppercase">
+        <span className="font-hud text-[0.52rem] tracking-[0.2em] text-[var(--text-muted)] uppercase">
           {label}
         </span>
-        <span className="text-lg leading-none">{icon}</span>
+        {/* Geometric icon — no emoji */}
+        <span
+          className="font-hud text-base leading-none"
+          style={{ color }}
+        >
+          {icon}
+        </span>
       </div>
 
       <div
@@ -44,7 +49,7 @@ function StatCard({ label, value, icon, color, delay, sub }) {
       </div>
 
       {sub && (
-        <div className="font-mono text-[0.6rem] text-[var(--text-muted)] mt-1 relative z-10">
+        <div className="font-mono text-[0.57rem] text-[var(--text-muted)] mt-1 relative z-10">
           {sub}
         </div>
       )}
@@ -52,8 +57,8 @@ function StatCard({ label, value, icon, color, delay, sub }) {
   );
 }
 
-/* ─── Achievement tile ──────────────────────────── */
-function AchievementTile({ name, unlocked, delay }) {
+/* ─── Achievement tile ───────────────────────────────── */
+function AchievementTile({ name, desc, unlocked, accentColor, delay }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.94 }}
@@ -67,40 +72,45 @@ function AchievementTile({ name, unlocked, delay }) {
       }`}
       style={
         unlocked
-          ? { borderColor: "var(--border-hi)" }
+          ? { borderColor: `${accentColor}55` }
           : { filter: "grayscale(0.9)" }
       }
     >
-      {/* Corner ribbon for unlocked */}
-      {unlocked && (
+      {/* Status ribbon */}
+      {unlocked ? (
         <div className="absolute top-0 right-0">
           <div
-            className="px-2.5 py-1 font-hud text-[0.5rem] text-[var(--void)] rounded-bl-lg rounded-tr-xl tracking-widest"
-            style={{ background: "var(--neon)" }}
+            className="px-2.5 py-1 font-hud text-[0.48rem] text-[var(--void)] rounded-bl-lg rounded-tr-xl tracking-widest"
+            style={{ background: accentColor }}
           >
             ✓ EARNED
           </div>
         </div>
-      )}
-      {!unlocked && (
+      ) : (
         <div className="absolute top-0 right-0">
-          <div className="px-2.5 py-1 font-hud text-[0.5rem] text-[var(--text-muted)] rounded-bl-lg rounded-tr-xl tracking-widest bg-[rgba(255,255,255,0.05)] border-l border-b border-[var(--border)]">
-            🔒 LOCKED
+          <div className="px-2.5 py-1 font-hud text-[0.48rem] text-[var(--text-muted)] rounded-bl-lg rounded-tr-xl tracking-widest bg-[rgba(255,255,255,0.04)] border-l border-b border-[var(--border)]">
+            ⊘ LOCKED
           </div>
         </div>
       )}
 
-      <h3 className="font-title text-lg text-[var(--text)] mb-1 mt-3">
+      {/* Accent dot */}
+      <div
+        className="w-2 h-2 rounded-full mb-3 mt-3"
+        style={{ background: unlocked ? accentColor : "rgba(255,255,255,0.1)", boxShadow: unlocked ? `0 0 8px ${accentColor}` : "none" }}
+      />
+
+      <h3 className="font-title text-lg text-[var(--text)] mb-1">
         {name}
       </h3>
-      <p className="font-mono text-[0.65rem] text-[var(--text-muted)] tracking-wider uppercase">
-        {unlocked ? "Achievement unlocked" : "Keep hunting to unlock"}
+      <p className="font-mono text-[0.62rem] text-[var(--text-muted)] tracking-wider uppercase">
+        {unlocked ? "Achievement unlocked" : desc}
       </p>
     </motion.div>
   );
 }
 
-/* ─── MAIN ──────────────────────────────────────── */
+/* ─── MAIN ───────────────────────────────────────────── */
 export default function Profile({ level, xp, streak, progress, course }) {
   const navigate = useNavigate();
 
@@ -112,13 +122,33 @@ export default function Profile({ level, xp, streak, progress, course }) {
   ).length;
 
   const achievements = [
-    { name: "First Blood 🩸",       unlocked: problemsSolved >= 1 },
-    { name: "Apprentice Hunter 🏹", unlocked: level >= 3 },
-    { name: "Streak Starter 🔥",    unlocked: streak >= 3 },
-    { name: "Stage Conqueror 👑",   unlocked: stagesCompleted >= 1 },
+    {
+      name: "First Blood",
+      desc: "Solve your first problem",
+      unlocked: problemsSolved >= 1,
+      accentColor: "var(--crimson)"
+    },
+    {
+      name: "Apprentice Hunter",
+      desc: "Reach level 3",
+      unlocked: level >= 3,
+      accentColor: "var(--neon)"
+    },
+    {
+      name: "Streak Starter",
+      desc: "Maintain a 3-day streak",
+      unlocked: streak >= 3,
+      accentColor: "var(--amber)"
+    },
+    {
+      name: "Stage Conqueror",
+      desc: "Complete an entire stage",
+      unlocked: stagesCompleted >= 1,
+      accentColor: "var(--cyan)"
+    },
   ];
 
-  const rank = getRank(level);
+  const rank     = getRank(level);
   const xpInLevel = (xp ?? 0) % 100;
 
   return (
@@ -129,6 +159,7 @@ export default function Profile({ level, xp, streak, progress, course }) {
       <div className="absolute inset-0 bg-dot-grid opacity-25 pointer-events-none" />
 
       <div className="relative z-10 max-w-5xl mx-auto px-8 py-10">
+
         {/* ─── Back nav ─── */}
         <motion.div
           initial={{ opacity: 0, y: -8 }}
@@ -140,7 +171,7 @@ export default function Profile({ level, xp, streak, progress, course }) {
             whileHover={{ x: -2 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => navigate("/dashboard")}
-            className="btn-ghost px-4 py-2 rounded-lg font-hud text-[0.65rem] tracking-widest"
+            className="btn-ghost px-4 py-2 rounded-lg font-hud text-[0.62rem] tracking-widest"
           >
             ← DASHBOARD
           </motion.button>
@@ -148,20 +179,19 @@ export default function Profile({ level, xp, streak, progress, course }) {
             whileHover={{ x: -2 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => navigate("/")}
-            className="btn-ghost px-4 py-2 rounded-lg font-hud text-[0.65rem] tracking-widest"
+            className="btn-ghost px-4 py-2 rounded-lg font-hud text-[0.62rem] tracking-widest"
           >
             ← COURSE
           </motion.button>
         </motion.div>
 
-        {/* ─── Hero with rank ─── */}
+        {/* ─── Hero ─── */}
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.55 }}
           className="card rounded-2xl p-8 mb-10 relative overflow-hidden"
         >
-          {/* glow */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
@@ -169,18 +199,17 @@ export default function Profile({ level, xp, streak, progress, course }) {
                 "radial-gradient(ellipse at 100% 0%, rgba(0,255,135,0.06) 0%, transparent 65%)",
             }}
           />
-          {/* scanlines */}
           <div className="scanlines opacity-20" />
 
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <p className="font-hud text-[0.6rem] tracking-[0.25em] text-[var(--neon)] uppercase mb-2">
+              <p className="font-hud text-[0.57rem] tracking-[0.25em] text-[var(--neon)] uppercase mb-2">
                 ◆ OPERATIVE FILE ◆
               </p>
               <h1 className="font-title text-5xl text-gradient-neon mb-2">
                 HUNTER PROFILE
               </h1>
-              <p className="font-mono text-[0.7rem] text-[var(--text-muted)] tracking-wider uppercase">
+              <p className="font-mono text-[0.67rem] text-[var(--text-muted)] tracking-wider uppercase">
                 Track your growth · Hunt knowledge · Level up
               </p>
             </div>
@@ -206,7 +235,7 @@ export default function Profile({ level, xp, streak, progress, course }) {
                 {rank.icon}
               </div>
               <div>
-                <p className="font-hud text-[0.55rem] tracking-[0.2em] text-[var(--text-muted)] uppercase mb-0.5">
+                <p className="font-hud text-[0.52rem] tracking-[0.2em] text-[var(--text-muted)] uppercase mb-0.5">
                   Current Rank
                 </p>
                 <p
@@ -222,44 +251,11 @@ export default function Profile({ level, xp, streak, progress, course }) {
 
         {/* ─── Stat grid ─── */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
-          <StatCard
-            label="Level"
-            value={level}
-            icon="⚡"
-            color="var(--amber)"
-            delay={0.05}
-          />
-          <StatCard
-            label="Total XP"
-            value={xp}
-            icon="💎"
-            color="var(--cyan)"
-            delay={0.10}
-          />
-          <StatCard
-            label="Streak"
-            value={streak}
-            icon="🔥"
-            color="#FF7820"
-            sub="days active"
-            delay={0.15}
-          />
-          <StatCard
-            label="Solved"
-            value={problemsSolved}
-            icon="✓"
-            color="var(--neon)"
-            sub="problems"
-            delay={0.20}
-          />
-          <StatCard
-            label="Stages"
-            value={stagesCompleted}
-            icon="🏆"
-            color="var(--purple)"
-            sub="completed"
-            delay={0.25}
-          />
+          <StatCard label="Level"  value={level}          icon="▲" color="var(--amber)"  delay={0.05} />
+          <StatCard label="XP"     value={xp}             icon="◈" color="var(--cyan)"   delay={0.10} />
+          <StatCard label="Streak" value={streak}         icon="↑" color="#FF7820"       delay={0.15} sub="days active" />
+          <StatCard label="Solved" value={problemsSolved}  icon="✓" color="var(--neon)"   delay={0.20} sub="problems" />
+          <StatCard label="Stages" value={stagesCompleted} icon="◆" color="var(--purple)" delay={0.25} sub="completed" />
         </div>
 
         {/* ─── XP Progress bar ─── */}
@@ -271,7 +267,7 @@ export default function Profile({ level, xp, streak, progress, course }) {
         >
           <div className="flex justify-between items-center mb-3">
             <div>
-              <p className="font-hud text-[0.6rem] tracking-[0.2em] text-[var(--text-muted)] uppercase mb-1">
+              <p className="font-hud text-[0.57rem] tracking-[0.2em] text-[var(--text-muted)] uppercase mb-1">
                 ◆ Progress to Next Level
               </p>
               <p className="font-title text-lg text-[var(--text)]">
@@ -285,13 +281,10 @@ export default function Profile({ level, xp, streak, progress, course }) {
                 style={{ color: "var(--amber)" }}
               >
                 {xpInLevel}
-                <span className="text-[var(--text-muted)] text-sm font-normal">
-                  {" "}
-                  / 100
-                </span>
+                <span className="text-[var(--text-muted)] text-sm font-normal"> / 100</span>
               </p>
-              <p className="font-mono text-[0.6rem] text-[var(--text-muted)] tracking-wider">
-                XP earned this level
+              <p className="font-mono text-[0.57rem] text-[var(--text-muted)] tracking-wider">
+                XP this level
               </p>
             </div>
           </div>
@@ -305,7 +298,7 @@ export default function Profile({ level, xp, streak, progress, course }) {
             />
           </div>
 
-          <p className="font-mono text-[0.6rem] text-[var(--text-muted)] mt-2 tracking-wider">
+          <p className="font-mono text-[0.57rem] text-[var(--text-muted)] mt-2 tracking-wider">
             {100 - xpInLevel} XP needed for next level
           </p>
         </motion.div>
@@ -319,15 +312,13 @@ export default function Profile({ level, xp, streak, progress, course }) {
             className="flex items-center justify-between mb-5"
           >
             <div>
-              <p className="font-hud text-[0.6rem] tracking-[0.25em] text-[var(--neon)] uppercase mb-1">
+              <p className="font-hud text-[0.57rem] tracking-[0.25em] text-[var(--neon)] uppercase mb-1">
                 ◆ HALL OF VALOR
               </p>
-              <h2 className="font-title text-3xl text-[var(--text)]">
-                ACHIEVEMENTS
-              </h2>
+              <h2 className="font-title text-3xl text-[var(--text)]">ACHIEVEMENTS</h2>
             </div>
             <div
-              className="px-3 py-1.5 rounded-lg font-hud text-[0.65rem] tracking-widest"
+              className="px-3 py-1.5 rounded-lg font-hud text-[0.62rem] tracking-widest"
               style={{
                 background: "var(--neon-10)",
                 border: "1px solid var(--border-mid)",
@@ -343,12 +334,15 @@ export default function Profile({ level, xp, streak, progress, course }) {
               <AchievementTile
                 key={a.name}
                 name={a.name}
+                desc={a.desc}
                 unlocked={a.unlocked}
+                accentColor={a.accentColor}
                 delay={0.4 + i * 0.07}
               />
             ))}
           </div>
         </div>
+
       </div>
     </div>
   );

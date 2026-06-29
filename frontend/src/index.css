@@ -233,9 +233,9 @@ body {
   animation: gradient-shift 4s ease-in-out infinite;
 }
 
-.text-neon  { color: var(--neon); }
-.text-cyan  { color: var(--cyan); }
-.text-amber { color: var(--amber); }
+.text-neon    { color: var(--neon); }
+.text-cyan    { color: var(--cyan); }
+.text-amber   { color: var(--amber); }
 .text-crimson { color: var(--crimson); }
 
 /* ─── MARKDOWN ───────────────────────────────────────── */
@@ -324,6 +324,12 @@ body {
   96%            { opacity: 0.6; }
   97%            { opacity: 1; }
   98%            { opacity: 0.7; }
+}
+
+/* ─── shimmer — used by the loading skeleton in App.jsx ─ */
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 /* ─── ANIMATION UTILITIES ────────────────────────────── */
