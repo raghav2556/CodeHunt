@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import Background from "./Background";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -99,9 +100,8 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--void)] flex items-center justify-center px-6 py-10 relative">
-      <div className="absolute inset-0 bg-dot-grid opacity-30 pointer-events-none" />
-      <div className="scanlines opacity-20" />
+    <div className="min-h-screen overflow-x-hidden bg-[var(--void)] flex items-center justify-center px-6 py-10 relative">
+      <Background />
 
       <div className="relative z-10 w-full max-w-md mx-auto">
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import Background from "./Background";
 
 /* Animated background node */
 function Node({ x, y, size, delay }) {
@@ -207,19 +208,8 @@ export default function AuthScreen({
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--void)] overflow-hidden relative select-none">
 
-      {/* Grid + scan */}
-      <div className="absolute inset-0 bg-dot-grid opacity-60" />
-      <div className="scanlines" />
-
-      {/* Glow orbs */}
-      <div
-        className="absolute top-1/3 left-1/4 w-[500px] h-[500px] rounded-full pointer-events-none"
-        style={{ background: "radial-gradient(circle, rgba(0,255,135,0.04) 0%, transparent 70%)" }}
-      />
-      <div
-        className="absolute bottom-1/4 right-1/3 w-[400px] h-[400px] rounded-full pointer-events-none"
-        style={{ background: "radial-gradient(circle, rgba(0,212,255,0.04) 0%, transparent 70%)" }}
-      />
+      {/* Shared background layer */}
+      <Background />
 
       {/* Floating nodes */}
       {nodes.map(n => <Node key={n.id} {...n} />)}

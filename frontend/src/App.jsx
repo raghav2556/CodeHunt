@@ -7,6 +7,7 @@ import Sidebar from "./components/Sidebar";
 import MainPanel from "./components/MainPanel";
 import Profile from "./components/Profile";
 import ForgotPassword from "./components/ForgotPassword";
+import Background from "./components/Background";
 import { useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -205,8 +206,9 @@ export default function App() {
 
   if (authLoading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-[var(--void)]">
-        <div className="text-center">
+      <div className="h-screen flex items-center justify-center bg-[var(--void)] relative overflow-hidden">
+        <Background />
+        <div className="text-center relative z-10">
           <div
             className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin mx-auto mb-3"
             style={{ borderColor: "var(--neon)", borderTopColor: "transparent" }}
@@ -254,7 +256,7 @@ export default function App() {
         className="h-screen flex flex-col items-center justify-center relative overflow-hidden"
         style={{ background: "var(--void)" }}
       >
-        <div className="absolute inset-0 bg-dot-grid opacity-30 pointer-events-none" />
+        <Background />
 
         <motion.div
           initial={{ opacity: 0, y: 16 }}

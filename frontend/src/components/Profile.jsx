@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import Background from "./Background";
 
 /* ─── Rank ladder (mirrors Navbar exactly) ───────────── */
 const RANKS = [
@@ -153,12 +154,13 @@ export default function Profile({ level, xp, streak, progress, course }) {
 
   return (
     <div
-      className="flex-1 overflow-y-auto relative"
+      className="flex-1 overflow-y-auto overflow-x-hidden"
       style={{ background: "var(--void)" }}
     >
-      <div className="absolute inset-0 bg-dot-grid opacity-25 pointer-events-none" />
+      <div className="relative min-h-full">
+        <Background />
 
-      <div className="relative z-10 max-w-5xl mx-auto px-8 py-10">
+        <div className="relative z-10 max-w-5xl mx-auto px-8 py-10">
 
         {/* ─── Hero ─── */}
         <motion.div
@@ -318,6 +320,7 @@ export default function Profile({ level, xp, streak, progress, course }) {
           </div>
         </div>
 
+        </div>
       </div>
     </div>
   );

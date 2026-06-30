@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import Background from "./Background";
 
 export default function Sidebar({ topics, progress, setCurrentTopicIndex, setCurrentView }) {
 
@@ -21,38 +22,41 @@ export default function Sidebar({ topics, progress, setCurrentTopicIndex, setCur
 
   return (
     <aside
-      className="w-[270px] shrink-0 flex flex-col overflow-y-auto"
+      className="w-[270px] shrink-0 flex flex-col overflow-y-auto overflow-x-hidden"
       style={{
         background: "linear-gradient(180deg, var(--void) 0%, rgba(7,18,36,0.9) 100%)",
         borderRight: "1px solid var(--border)"
       }}
     >
-      {/* ─── Header ─── */}
-      <div className="px-4 pt-5 pb-4 shrink-0">
-        <p className="font-hud text-[0.52rem] tracking-[0.22em] text-[var(--neon)] uppercase mb-2">
-          ◆ LEARNING PATH
-        </p>
-        <div className="divider-neon" />
+      <div className="relative min-h-full flex flex-col">
+        <Background compact />
 
-        {/* Overall progress */}
-        <div className="mt-3 flex items-center justify-between mb-1.5">
-          <span className="font-mono text-[0.57rem] text-[var(--text-muted)]">OVERALL</span>
-          <span className="font-hud text-[0.57rem] text-[var(--neon)]">
-            {totalSolved}/{totalAll}
-          </span>
-        </div>
-        <div className="h-1.5 prog-track">
-          <motion.div
-            className="prog-fill h-full"
-            initial={{ width: 0 }}
-            animate={{ width: totalAll > 0 ? `${(totalSolved / totalAll) * 100}%` : "0%" }}
-            transition={{ duration: 1 }}
-          />
-        </div>
-      </div>
+        {/* ─── Header ─── */}
+        <div className="px-4 pt-5 pb-4 shrink-0 relative z-10">
+          <p className="font-hud text-[0.52rem] tracking-[0.22em] text-[var(--neon)] uppercase mb-2">
+            ◆ LEARNING PATH
+          </p>
+          <div className="divider-neon" />
 
-      {/* ─── Stage list ─── */}
-      <div className="flex-1 px-3 pb-5 space-y-2">
+          {/* Overall progress */}
+          <div className="mt-3 flex items-center justify-between mb-1.5">
+            <span className="font-mono text-[0.57rem] text-[var(--text-muted)]">OVERALL</span>
+            <span className="font-hud text-[0.57rem] text-[var(--neon)]">
+              {totalSolved}/{totalAll}
+            </span>
+          </div>
+          <div className="h-1.5 prog-track">
+            <motion.div
+              className="prog-fill h-full"
+              initial={{ width: 0 }}
+              animate={{ width: totalAll > 0 ? `${(totalSolved / totalAll) * 100}%` : "0%" }}
+              transition={{ duration: 1 }}
+            />
+          </div>
+        </div>
+
+        {/* ─── Stage list ─── */}
+        <div className="flex-1 px-3 pb-5 space-y-2 relative z-10">
         {topics.map((topic, tIndex) => {
           const { solved, total } = getTopicProgress(tIndex);
           const completed  = solved === total && total > 0;
@@ -150,6 +154,7 @@ export default function Sidebar({ topics, progress, setCurrentTopicIndex, setCur
             </motion.button>
           );
         })}
+        </div>
       </div>
     </aside>
   );

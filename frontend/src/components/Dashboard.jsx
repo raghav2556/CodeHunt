@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import Background from "./Background";
 
 /* Stat card — no emoji, just label + value */
 function StatReadout({ label, value, color, delay }) {
@@ -49,12 +50,13 @@ export default function Dashboard({ progress, username, xp, level, streak, cours
   ];
 
   return (
-    <div className="flex-1 overflow-y-auto relative" style={{ background: "var(--void)" }}>
-      <div className="absolute inset-0 bg-dot-grid opacity-30 pointer-events-none" />
+    <div className="flex-1 overflow-y-auto overflow-x-hidden" style={{ background: "var(--void)" }}>
+      <div className="relative min-h-full">
+        <Background />
 
-      <div className="relative z-10 max-w-3xl mx-auto px-6 py-12">
+        <div className="relative z-10 max-w-3xl mx-auto px-6 py-12">
 
-        {/* ─── Hero ─── */}
+          {/* ─── Hero ─── */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -190,6 +192,7 @@ export default function Dashboard({ progress, username, xp, level, streak, cours
           </motion.button>
         </motion.div>
 
+        </div>
       </div>
     </div>
   );

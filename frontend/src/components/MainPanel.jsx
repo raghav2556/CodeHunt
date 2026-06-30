@@ -3,6 +3,7 @@ import Editor from "@monaco-editor/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { motion, AnimatePresence } from "framer-motion";
+import Background from "./Background";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -72,8 +73,9 @@ export default function MainPanel({
   // ─── Loading ──────────────────────────────────────────────────────────────
   if (!topic || !problem) {
     return (
-      <div className="flex-1 flex items-center justify-center" style={{ background: "var(--void)" }}>
-        <div className="text-center">
+      <div className="flex-1 flex items-center justify-center relative overflow-hidden" style={{ background: "var(--void)" }}>
+        <Background />
+        <div className="text-center relative z-10">
           <div
             className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin mx-auto mb-3"
             style={{ borderColor: "var(--neon)", borderTopColor: "transparent" }}
@@ -102,15 +104,16 @@ export default function MainPanel({
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
-        className="flex-1 overflow-y-auto relative"
+        className="flex-1 overflow-y-auto overflow-x-hidden"
         style={{ background: "var(--void)" }}
       >
-        <div className="absolute inset-0 bg-dot-grid opacity-25 pointer-events-none" />
+        <div className="relative min-h-full">
+          <Background />
 
-        <div className="relative z-10 max-w-2xl mx-auto px-8 py-12">
+          <div className="relative z-10 max-w-2xl mx-auto px-8 py-12">
 
-          {/* Stage header */}
-          <motion.div
+            {/* Stage header */}
+            <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
@@ -238,6 +241,7 @@ export default function MainPanel({
 
           </div>
         </div>
+        </div>
       </motion.div>
     );
   }
@@ -252,55 +256,58 @@ export default function MainPanel({
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="flex-1 overflow-y-auto"
+        className="flex-1 overflow-y-auto overflow-x-hidden"
         style={{ background: "var(--void)" }}
       >
-        <div className="max-w-3xl mx-auto px-8 py-8">
+        <div className="relative min-h-full">
+          <Background />
+          <div className="relative z-10 max-w-3xl mx-auto px-8 py-8">
 
-          <button
-            onClick={() => setCurrentView("topic")}
-            className="btn-ghost px-4 py-2 rounded-lg font-hud text-xs mb-8 inline-flex items-center gap-2"
-          >
-            ← BACK
-          </button>
-
-          <div className="mb-8">
-            <span className="badge badge-neon mb-3 inline-block">
-              STAGE {currentTopicIndex + 1} — FIELD MANUAL
-            </span>
-            <h1 className="font-title text-4xl mb-2" style={{ color: "var(--neon)" }}>
-              {topic.topicName}
-            </h1>
-            <div className="divider-neon mt-4" />
-          </div>
-
-          <div className="notes-body">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={{
-                code({ node, inline, className, children, ...props }) {
-                  if (inline) return <code {...props}>{children}</code>;
-                  return (
-                    <pre>
-                      <code className={className} {...props}>{children}</code>
-                    </pre>
-                  );
-                },
-              }}
+            <button
+              onClick={() => setCurrentView("topic")}
+              className="btn-ghost px-4 py-2 rounded-lg font-hud text-xs mb-8 inline-flex items-center gap-2"
             >
-              {topic.notes}
-            </ReactMarkdown>
-          </div>
+              ← BACK
+            </button>
 
-          <div className="mt-10 pt-6 border-t border-[var(--border)]">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => setCurrentView("list")}
-              className="btn-primary px-8 py-3 rounded-xl text-xs"
-            >
-              ▶ START PROBLEMS
-            </motion.button>
+            <div className="mb-8">
+              <span className="badge badge-neon mb-3 inline-block">
+                STAGE {currentTopicIndex + 1} — FIELD MANUAL
+              </span>
+              <h1 className="font-title text-4xl mb-2" style={{ color: "var(--neon)" }}>
+                {topic.topicName}
+              </h1>
+              <div className="divider-neon mt-4" />
+            </div>
+
+            <div className="notes-body">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  code({ node, inline, className, children, ...props }) {
+                    if (inline) return <code {...props}>{children}</code>;
+                    return (
+                      <pre>
+                        <code className={className} {...props}>{children}</code>
+                      </pre>
+                    );
+                  },
+                }}
+              >
+                {topic.notes}
+              </ReactMarkdown>
+            </div>
+
+            <div className="mt-10 pt-6 border-t border-[var(--border)]">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setCurrentView("list")}
+                className="btn-primary px-8 py-3 rounded-xl text-xs"
+              >
+                ▶ START PROBLEMS
+              </motion.button>
+            </div>
           </div>
         </div>
       </motion.div>
@@ -322,10 +329,12 @@ export default function MainPanel({
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="flex-1 overflow-y-auto"
+        className="flex-1 overflow-y-auto overflow-x-hidden"
         style={{ background: "var(--void)" }}
       >
-        <div className="max-w-2xl mx-auto px-8 py-8">
+        <div className="relative min-h-full">
+        <Background />
+        <div className="relative z-10 max-w-2xl mx-auto px-8 py-8">
 
           <button
             onClick={() => setCurrentView("topic")}
@@ -428,6 +437,7 @@ export default function MainPanel({
             })}
           </div>
         </div>
+        </div>
       </motion.div>
     );
   }
@@ -453,24 +463,55 @@ export default function MainPanel({
           LEFT — Problem description + results
       ══════════════════════════════════════════════════════════ */}
       <div
-        className="w-1/2 flex flex-col overflow-y-auto"
+        className="w-1/2 flex flex-col overflow-y-auto overflow-x-hidden"
         style={{ background: "var(--void)", borderRight: "1px solid var(--border)" }}
       >
-        <div className="p-6 space-y-5">
+        <div className="relative min-h-full">
+        <Background />
+        <div className="p-6 space-y-5 relative z-10">
 
           {/* Nav row */}
-          <div className="flex items-center justify-between">
-            <motion.button
-              whileHover={{ x: -2 }}
-              onClick={() => setCurrentView("list")}
-              className="btn-ghost px-3 py-1.5 rounded-lg font-hud text-xs inline-flex items-center gap-1.5"
-            >
-              ← MISSIONS
-            </motion.button>
-            <span className="font-mono text-[0.57rem] text-[var(--text-muted)]">
-              {currentProblemIndex + 1} / {topic.problems.length}
-            </span>
-          </div>
+         <div className="flex items-center justify-between">
+  {/* Left section */}
+  <div className="flex items-center gap-3">
+    <motion.button
+      whileHover={{ x: -2 }}
+      onClick={() => setCurrentView("list")}
+      className="btn-ghost px-3 py-1.5 rounded-lg font-hud text-xs inline-flex items-center gap-1.5"
+    >
+      ← MISSIONS
+    </motion.button>
+
+    {showSuccessActions && (
+      <>
+        <motion.button
+          whileHover={{ x: -2 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={() => setCurrentView("notes")}
+          className="btn-ghost px-3 py-1.5 rounded-lg font-hud text-xs inline-flex items-center gap-1.5"
+        >
+          ← NOTES
+        </motion.button>
+
+        {currentProblemIndex < topic.problems.length - 1 && (
+          <motion.button
+            whileHover={{ x: 2 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setCurrentProblemIndex(prev => prev + 1)}
+            className="btn-primary px-3 py-1.5 rounded-lg font-hud text-xs inline-flex items-center gap-1.5"
+          >
+            NEXT MISSION →
+          </motion.button>
+        )}
+      </>
+    )}
+  </div>
+
+  {/* Right section */}
+  <span className="font-mono text-[0.57rem] text-[var(--text-muted)]">
+    {currentProblemIndex + 1} / {topic.problems.length}
+  </span>
+</div>
 
           {/* ── Problem card ── */}
           <div className="card rounded-xl p-5">
@@ -685,34 +726,6 @@ export default function MainPanel({
             )}
           </AnimatePresence>
 
-          {/* ── Success actions ── */}
-          {showSuccessActions && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.97 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex gap-3 flex-wrap"
-            >
-              {currentProblemIndex < topic.problems.length - 1 && (
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => setCurrentProblemIndex(prev => prev + 1)}
-                  className="btn-primary px-6 py-2.5 rounded-xl text-xs"
-                >
-                  NEXT MISSION →
-                </motion.button>
-              )}
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => setCurrentView("notes")}
-                className="btn-ghost px-5 py-2.5 rounded-xl font-hud text-xs"
-              >
-                ← NOTES
-              </motion.button>
-            </motion.div>
-          )}
-
           {/* ── Stage completed ── */}
           {stageCompleted && (
             <motion.div
@@ -749,6 +762,7 @@ export default function MainPanel({
             </motion.div>
           )}
 
+        </div>
         </div>
       </div>
 
