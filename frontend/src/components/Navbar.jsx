@@ -14,21 +14,21 @@ function getRank(level) {
 }
 
 export default function Navbar({ level, xp, streak, stage, stageName, logout, levelUp, username }) {
-  const navigate  = useNavigate();
-  const location  = useLocation();
-  const safeXp    = xp ?? 0;
+  const navigate   = useNavigate();
+  const location   = useLocation();
+  const safeXp     = xp ?? 0;
   const xpProgress = safeXp % 100;
   const rank       = getRank(level);
 
   const navItems = [
-    { label: "DASHBOARD", path: "/dashboard" },
-    { label: "COURSE",    path: "/"          },
-    { label: "PROFILE",   path: "/profile"   },
+    { label: "Home",    path: "/dashboard" },
+    { label: "Course",  path: "/"          },
+    { label: "Profile", path: "/profile"   },
   ];
 
   return (
     <header
-      className="relative flex items-center justify-between px-5 h-14 shrink-0 z-50"
+      className="relative flex items-center px-5 h-14 shrink-0 z-50"
       style={{
         background: "linear-gradient(180deg, rgba(4,11,20,0.98) 0%, rgba(7,18,36,0.98) 100%)",
         borderBottom: "1px solid var(--border)",
@@ -37,64 +37,72 @@ export default function Navbar({ level, xp, streak, stage, stageName, logout, le
     >
       <div className="scanlines opacity-30" />
 
-      {/* ─── Left: Logo ─── */}
-      <div className="flex items-center z-10 shrink-0">
+      {/* ─── Logo ─── */}
+      <div className="flex items-center z-10 shrink-0 mr-6">
         <img src="/logo1.png" alt="CodeHunt" className="h-9 object-contain animate-flicker" />
       </div>
 
-      {/* ─── Center: Navigation ─── */}
-      <nav className="absolute left-1/2 -translate-x-1/2 z-10 flex items-center gap-3">
-
-        {/* Page pills */}
-        <div
-          className="flex items-center gap-0.5 p-0.5 rounded-xl"
-          style={{ background: "rgba(0,0,0,0.45)", border: "1px solid var(--border)" }}
-        >
-          {navItems.map(({ label, path }) => {
-            const active = location.pathname === path;
-            return (
-              <motion.button
-                key={path}
-                onClick={() => navigate(path)}
-                whileTap={{ scale: 0.96 }}
-                className={`px-4 py-1.5 rounded-lg font-hud text-[0.57rem] tracking-[0.14em] transition-all duration-200 ${
-                  active
-                    ? "text-[#030e09]"
-                    : "text-[var(--text-muted)] hover:text-[var(--text)]"
-                }`}
-                style={active ? {
-                  background: "var(--neon)",
-                  boxShadow: "0 0 14px var(--neon-40)"
-                } : {}}
-              >
-                {label}
-              </motion.button>
-            );
-          })}
-        </div>
-
-        {/* Stage breadcrumb — only on course page */}
-        <AnimatePresence>
-          {location.pathname === "/" && stageName && (
-            <motion.div
-              key="breadcrumb"
-              initial={{ opacity: 0, x: -6 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -6 }}
-              className="flex items-center gap-1.5 pl-3 border-l border-[var(--border)]"
+      {/* ─── Standalone nav buttons ─── */}
+      <nav className="flex items-center z-10">
+        {navItems.map(({ label, path }) => {
+          const active = location.pathname === path;
+          return (
+            <motion.button
+              key={path}
+              onClick={() => navigate(path)}
+              whileTap={{ scale: 0.97 }}
+              className={`relative h-14 flex items-center px-4 font-hud text-[0.57rem] tracking-[0.14em] transition-colors duration-200 ${
+                active
+                  ? "text-[var(--neon)]"
+                  : "text-[var(--text-muted)] hover:text-[var(--text)]"
+              }`}
             >
-              <span className="font-hud text-[0.48rem] tracking-[0.12em] text-[var(--text-muted)] truncate max-w-[130px] uppercase">
-                {stageName}
-              </span>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              {label}
+              {/* Animated underline slides between active buttons */}
+              {active && (
+                <motion.div
+                  layoutId="nav-underline"
+                  className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full"
+                  style={{
+                    background: "var(--neon)",
+                    boxShadow: "0 0 8px var(--neon-glow)"
+                  }}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                />
+              )}
+            </motion.button>
+          );
+        })}
       </nav>
+
+      {/* ─── Separator + Stage name (course page only) ─── */}
+      <AnimatePresence>
+        {location.pathname === "/" && stageName && (
+          <motion.div
+            key="stage-crumb"
+            initial={{ opacity: 0, x: -6 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -6 }}
+            className="flex items-center gap-2.5 z-10"
+          >
+            <div className="w-px h-4 mx-1" style={{ background: "var(--border)" }} />
+            <span
+              className="font-hud text-[0.48rem] tracking-[0.12em] truncate max-w-[160px] uppercase"
+              style={{ color: "var(--text-muted)" }}
+            >
+              {stageName}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── Push stats to the right ─── */}
+      <div className="flex-1" />
 
       {/* ─── Right: Stats + Exit ─── */}
       <div className="flex items-center gap-3 z-10">
 
-        {/* Level Up toast */}
+        {/* Level Up Toast */}
         <AnimatePresence>
           {levelUp && (
             <motion.div
